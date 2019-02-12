@@ -1,0 +1,6 @@
+# Requirements for Heroku deployment
+
+-r common.txt
+gunicorn==19.9.0
+uvicorn==0.4.3
+django-heroku==0.3.1

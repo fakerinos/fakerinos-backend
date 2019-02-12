@@ -1,0 +1,5 @@
+# Requirements for development on Linux systems
+
+-r dev.txt
+gunicorn==19.9.0
+uvicorn==0.4.3

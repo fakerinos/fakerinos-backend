@@ -1,0 +1,4 @@
+# Requirements for development on Windows systems
+
+-r dev.txt
+pypiwin32==223
