@@ -2,9 +2,6 @@
   "name": "fakerinos",
   "scripts": {},
   "env": {
-    "DISABLE_COLLECTSTATIC": {
-      "required": true
-    },
     "SECRET_KEY": {
       "generator": "secret"
     },
