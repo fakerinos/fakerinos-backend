@@ -25,6 +25,9 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
+    # account management
+    'accounts',
+
     # chat app
     'chat',
     'channels',
