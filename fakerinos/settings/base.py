@@ -25,15 +25,16 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
-    # account management
-    'accounts',
-
-    # chat app
+    # Chat App
     'chat',
     'channels',
 
-    # login / registration
+    # REST Framework
     'rest_framework',
+    'rest_framework_swagger',
+
+    # Account Management
+    'accounts',
     'rest_framework.authtoken',
     'rest_auth',
     'rest_auth.registration',
@@ -51,8 +52,13 @@ INSTALLED_APPS = [
 
 ]
 
-# Channels stuff
+# REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',
+    'DEFAULT_VERSION': '1.0',
+}
 
+# Channels stuff
 ASGI_APPLICATION = 'fakerinos.routing.application'
 
 CHANNEL_LAYERS = {
@@ -66,7 +72,7 @@ CHANNEL_LAYERS = {
     },
 }
 
-SITE_ID = 9
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
