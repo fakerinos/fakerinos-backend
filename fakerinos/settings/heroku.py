@@ -2,9 +2,6 @@ from .base import *
 import django_heroku
 import dj_database_url
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['SECRET_KEY']
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.zoho.com'
 EMAIL_USE_TLS = False
@@ -14,7 +11,7 @@ EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
 DEFAULT_FROM_EMAIL = os.environ['EMAIL_HOST_USER']
 EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
@@ -38,5 +35,7 @@ AUTH_PASSWORD_VALIDATORS = [
 DATABASES = {
     'default': dj_database_url.config(ssl_require=True)
 }
+
+SECURE_SSL_REDIRECT = True
 
 django_heroku.settings(locals(), databases=False, test_runner=False, allowed_hosts=False, secret_key=False)

@@ -18,6 +18,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ['SECRET_KEY']
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
@@ -57,6 +60,14 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',
     'DEFAULT_VERSION': '1.0',
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+LOGIN_URL = '/api/accounts/login'
+LOGOUT_URL = '/api/accounts/logout'
+LOGIN_REDIRECT_URL = '/api/accounts/user'
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+ACCOUNT_PRESERVE_USERNAME_CASING = False
 
 # Channels stuff
 ASGI_APPLICATION = 'fakerinos.routing.application'
