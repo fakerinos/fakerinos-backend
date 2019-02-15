@@ -6,7 +6,7 @@
       "generator": "secret"
     },
     "DJANGO_SETTINGS_MODULE": {
-      "value": "fakerinos.settings.staging_settings"
+      "required": true
     },
     "EMAIL_HOST_PASSWORD": {
       "required": true
