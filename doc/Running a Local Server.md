@@ -81,9 +81,9 @@ Django needs to set some things up before it can serve anything.
 From within the project directory:
 
 ```bash
-$ python manage.py migrate
-$ python manage.py collectstatic
-$ python manage.py createasuperuser
+$ heroku local:run python manage.py migrate
+$ heroku local:run python manage.py collectstatic
+$ heroku local:run python manage.py createsuperuser
 ```
 
 `createsuperuser` lets you create an admin account in the project's local database. This can be pretty useful for doing things like manually creating and removing user accounts.
