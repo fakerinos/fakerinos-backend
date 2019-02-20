@@ -1,0 +1,14 @@
+[run]
+omit =
+    *static*,
+    *tests*,
+    *settings*
+    *wsgi.py,
+    *apps.py,
+    manage.py,
+    db.sqlite3,
+    *requirements*,
+    .*,
+    *.json,
+    dump.rdb,
+    Procfile*,

@@ -1,6 +1,7 @@
 from .base_settings import *
 
-DEBUG = False
+ENVIRONMENT = 'testing'
+DEBUG = True
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
