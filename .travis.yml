@@ -1,0 +1,12 @@
+language: python
+python:
+  - "3.6"
+
+services:
+  - redis-server
+
+install:
+  - pip install -r requirements/dev.txt
+
+script:
+  - pytest -c pytest_travis.ini
