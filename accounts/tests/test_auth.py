@@ -15,7 +15,7 @@ class TestRegister(APITestCase):
             'username': self.default_username,
             'email': self.default_email,
             'password1': self.default_password,
-            'password2': self.default_password
+            'password2': self.default_password,
         }
         # add args to body
         body.update(kwargs)
@@ -39,6 +39,6 @@ class TestRegister(APITestCase):
 
     def test_missing_password(self):
         response = self.register(password1=None, password2=None)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.content)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST, response.content)
 
 # TODO: Test Login/out, Email Verification, etc.
