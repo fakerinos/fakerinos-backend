@@ -18,7 +18,7 @@ eggs/
 *.log
 *.pot
 local_settings.py
-.env
+*.env
 staticfiles
 db.sqlite3
 
@@ -37,3 +37,7 @@ docs/_build/
 .AppleDouble
 .LSOverride
 dump.rdb
+
+# Pytest Stuff
+htmlcov/
+\.coverage

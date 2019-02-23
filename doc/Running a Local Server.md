@@ -46,7 +46,7 @@ The repository comes with several requirements files, each for a different envir
 Ensure that you've activated your virtual environment before installing anything.
 
 ```bash
-$ pip install -r requirements/linux.txt
+$ pip install -r requirements/dev.txt
 $ python -m django --version  # check if django installed correctly
 2.1.7
 ```
