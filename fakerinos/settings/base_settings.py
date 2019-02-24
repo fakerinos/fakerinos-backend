@@ -34,6 +34,9 @@ INSTALLED_APPS = [
     'chat',
     'channels',
 
+    # Articles API
+    'articles',
+
     # REST Framework
     'rest_framework',
     'rest_framework_swagger',
