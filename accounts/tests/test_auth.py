@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from mixer.backend.django import mixer
+from django.urls import reverse, resolve
 from rest_framework.test import APITestCase
 from rest_framework import status
 
@@ -23,7 +24,7 @@ class TestRegister(APITestCase):
         nones = [k for k in body if body[k] is None]
         for k in nones:
             del body[k]
-        return self.client.post('/api/accounts/register/', body, format='json')
+        return self.client.post(reverse('rest_register'), body, format='json')
 
     def test_success(self):
         response = self.register()
