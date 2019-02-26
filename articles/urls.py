@@ -1,6 +1,6 @@
 from django.urls import path, include
-from .views import ManageArticles
+from .views import GetMostRecentArticles
 
 urlpatterns = [
-    path('', ManageArticles.as_view(), name='manage_articles')
+    path('recent', GetMostRecentArticles.as_view(), name='recent_articles')
 ]

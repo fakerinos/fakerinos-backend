@@ -15,6 +15,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'tags',
             'explanation',
             'publish_date',
+            'upload_date'
         )
 
     # def create(self, validated_data):
