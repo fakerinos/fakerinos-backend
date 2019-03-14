@@ -3,6 +3,8 @@ from .base_settings import *
 ENVIRONMENT = 'testing'
 DEBUG = True
 
+REST_FRAMEWORK['TEST_REQUEST_DEFAULT_FORMAT'] = 'json'
+
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 DATABASES = {

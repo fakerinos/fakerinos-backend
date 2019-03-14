@@ -5,6 +5,7 @@ from django.db import models
 class Article(models.Model):
     headline = models.CharField(max_length=500)
     rating = models.CharField(max_length=50)
+    domain = models.URLField(null=True, blank=True)
     text = models.TextField(null=True, blank=True)
     thumbnail_url = models.URLField(null=True, blank=True)
     author = models.CharField(max_length=100, null=True, blank=True)
