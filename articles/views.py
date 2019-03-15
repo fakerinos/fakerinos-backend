@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
+from rest_framework import permissions
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import permission_required
 from .models import Article
@@ -12,6 +13,7 @@ from .serializers import ArticleSerializer
 class ArticleViewSet(ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
+    permission_classes = (permissions.IsAuthenticated, permissions.DjangoModelPermissions)
 
 
 class MostRecentArticles(APIView):

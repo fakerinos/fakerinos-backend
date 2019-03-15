@@ -26,10 +26,14 @@ class TestArticlePermissions(APITestCase):
         self.article = mixer.blend(Article)
         self.article.save()
 
+        self.list_endpoint = reverse('articles-list')
+        self.retrieve_endpoint = reverse('articles-detail', kwargs={'pk': self.article.pk})
+
+    # region helpers
     def retrieve_article(self, expected_status, user=None):
         if user:
             self.client.force_login(user)
-        response = self.client.get(reverse('articles-detail', kwargs={'pk': self.article.pk}))
+        response = self.client.get(self.retrieve_endpoint)
         self.assertEqual(response.status_code, expected_status, response.content)
         return response
 
@@ -37,7 +41,7 @@ class TestArticlePermissions(APITestCase):
         if user:
             self.client.force_login(user)
         new_article = mixer.blend(Article)
-        response = self.client.post(reverse('articles-list'), data=ArticleSerializer(new_article).data)
+        response = self.client.post(self.list_endpoint, data=ArticleSerializer(new_article).data)
         self.assertEqual(response.status_code, expected_status, response.content)
         return response
 
@@ -47,7 +51,7 @@ class TestArticlePermissions(APITestCase):
         new_headline = 'new headline'
         data = ArticleSerializer(self.article).data
         data['headline'] = new_headline
-        response = self.client.patch(reverse('articles-detail', kwargs={'pk': self.article.pk}), data=data)
+        response = self.client.put(self.retrieve_endpoint, data=data)
         self.assertEqual(response.status_code, expected_status, response.content)
         if status.is_success(expected_status):
             self.assertEqual(Article.objects.get(pk=self.article.pk).headline, new_headline)
@@ -56,9 +60,11 @@ class TestArticlePermissions(APITestCase):
     def delete_article(self, expected_status, user=None):
         if user:
             self.client.force_login(user)
-        response = self.client.delete(reverse('articles-detail', kwargs={'pk': self.article.pk}))
+        response = self.client.delete(self.retrieve_endpoint)
         self.assertEqual(response.status_code, expected_status, response.content)
         return response
+
+    # endregion
 
     # region no-auth
     def test_noauth_get_article(self):
@@ -77,7 +83,7 @@ class TestArticlePermissions(APITestCase):
 
     # region adder
     def test_adder_get_article(self):
-        response = self.retrieve_article(status.HTTP_403_FORBIDDEN, user=self.adder)
+        response = self.retrieve_article(status.HTTP_200_OK, user=self.adder)
 
     def test_adder_add_article(self):
         response = self.create_article(status.HTTP_201_CREATED, user=self.adder)
