@@ -17,7 +17,6 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('headline', models.CharField(max_length=500)),
                 ('text', models.TextField(null=True, blank=True)),
-                ('domain', models.URLField(null=True, blank=True)),
                 ('author', models.CharField(max_length=100, null=True, blank=True)),
                 ('tags', models.CharField(blank=True, max_length=100, null=True)),
                 ('rating', models.CharField(max_length=50)),

@@ -15,6 +15,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'author',
             'tags',
             'explanation',
-            'publish_date',
-            'upload_date'
+            'published',
+            'created',
+            'modified',
         )
