@@ -16,3 +16,8 @@ class Article(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)
+
+
+class Deck(models.Model):
+    subject = models.CharField(max_length=50)
+    articles = models.ManyToManyField(Article)
