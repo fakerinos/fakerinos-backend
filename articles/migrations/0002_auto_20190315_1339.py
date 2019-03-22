@@ -47,11 +47,4 @@ class Migration(migrations.Migration):
             'modified',
             models.DateTimeField(auto_now=True),
         ),
-
-        # creator
-        migrations.AddField(
-            'Article',
-            'creator',
-            models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)
-        )
     ]

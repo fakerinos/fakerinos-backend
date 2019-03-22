@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth import get_user_model
 
 
 # Create your models here.
@@ -15,4 +14,3 @@ class Article(models.Model):
     published = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    creator = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, null=True)
