@@ -50,7 +50,6 @@ class TestDeckAPI(APITestCase):
         self.deck = mixer.blend(Deck, subject='test')
         self.deck.save()
 
-        # Why doesnt this work?
         Deck.objects.create(subject='test')
 
     # Unit Function Tests
@@ -95,4 +94,3 @@ class TestDeckAPI(APITestCase):
         self.client.force_login(self.adder)
         # TODO add custom router to hyperlink from filter
         'Serializers deal with the JSON passing of info'
-        response = self.client.get()
