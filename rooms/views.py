@@ -4,7 +4,7 @@ from .models import Room
 from .serializers import RoomSerializer
 
 
-class ArticleViewSet(ModelViewSet):
+class RoomViewSet(ModelViewSet):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
     permission_classes = (permissions.IsAuthenticated,)
