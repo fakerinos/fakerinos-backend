@@ -22,6 +22,10 @@ you need Permissions && Users instantiated for testing routers
         #self.deck.save(update_fields=["articles"])
         
 permissions:
+
+URL NAME --> queryset-<list or detail>
+list --> object.get.all(many=True)
+detail --> object.get(pk=<value>)
 """
 
 
@@ -62,16 +66,6 @@ class TestDeckAPI(APITestCase):
         decks = Deck.objects.count()
         self.assertEqual(decks, 2)
 
-    def test_routing_works(self):
-        self.client.force_login(self.adder)
-        response = self.client.get(reverse('decks-list'))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_retrieve_deck(self):
-        self.client.force_login(self.adder)
-        response = self.client.get(reverse('decks-detail', kwargs={'pk': self.deck.pk}))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
     def test_link_deck_to_articles(self):
         self.client.force_login(self.adder)
         self.deck.articles.add(self.article)
@@ -89,8 +83,25 @@ class TestDeckAPI(APITestCase):
         self.assertEqual(self.deck.articles.all().get(headline="article1").rating, "Hot Stuff")
 
     # Unit Routing Tests
+    def test_routing_works(self):
+        response = self.client.get(reverse('deck-list'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_retrieve_deck(self):
+        response = self.client.get(reverse('deck-detail', kwargs={'pk': self.deck.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_routing_deck_to_article(self):
-        self.deck.articles.add(self.article)
         self.client.force_login(self.adder)
         # TODO add custom router to hyperlink from filter
         'Serializers deal with the JSON passing of info'
+
+    def test_specifically(self):
+        self.client.force_login(self.adder)
+        self.deck.articles.add(self.article)
+        self.deck.articles.add(self.article2)
+        response = self.client.get(reverse('deck-name') + 'test')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+
