@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from .models import Article
+from .models import Article, Deck
 
 
 class ArticleSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Article
         fields = (
@@ -18,4 +19,13 @@ class ArticleSerializer(serializers.ModelSerializer):
             'published',
             'created',
             'modified',
+        )
+
+
+class DeckSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deck
+        fields = (
+            'subject',
+            'articles',
         )

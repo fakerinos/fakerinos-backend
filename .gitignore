@@ -41,3 +41,6 @@ dump.rdb
 # Pytest Stuff
 htmlcov/
 \.coverage
+
+env
+
