@@ -14,8 +14,3 @@ class Article(models.Model):
     published = models.DateTimeField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-
-
-class Deck(models.Model):
-    subject = models.CharField(max_length=50)
-    articles = models.ManyToManyField(Article)
