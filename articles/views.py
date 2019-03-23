@@ -24,12 +24,6 @@ class DeckViewSet(ModelViewSet):
         filter_backend = (DjangoFilterBackend,)
         filter_fields = ('subject')
         lookup_field = "deck__subject"
-        #
-        # if subject != None:
-        #     if self.queryset.filter(subject=subject).exists():
-        #         return self.queryset.get(subject=subject)
-        #     else:
-        #         return Response({'status': 'no such article'})
 
     # randomly get articles
 
