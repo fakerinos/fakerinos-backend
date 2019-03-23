@@ -1,15 +1,15 @@
 from django.contrib.auth.models import User
 from mixer.backend.django import mixer
-from django.urls import reverse, resolve
+from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
 
 
 # Create your tests here.
 class TestRegister(APITestCase):
-    default_username = 'user'
-    default_email = 'abc@xyz.com'
-    default_password = 'SuperC0mplexS3cret'
+    default_username = mixer.faker.simple_profile()['username']
+    default_email = mixer.faker.email()
+    default_password = mixer.faker.password()
 
     def register(self, **kwargs):
         body = {

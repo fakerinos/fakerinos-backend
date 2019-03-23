@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Article, Deck
+from .models import Article
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -23,6 +23,12 @@ class ArticleSerializer(serializers.ModelSerializer):
 
 
 class DeckSerializer(serializers.ModelSerializer):
+    articles = serializers.HyperlinkedRelatedField(
+        many=True,
+        read_only=True,
+        view_name='deck-detail'
+    )
+
     class Meta:
         model = Deck
         fields = (
