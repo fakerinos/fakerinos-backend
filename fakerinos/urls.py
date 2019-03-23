@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.urls')),
     path('api/articles/', include('articles.urls')),
+    path('api/rooms/', include('rooms.urls')),
     path('api/docs/', get_swagger_view(title='Fakerinos')),
     path('api/docs/default', include_docs_urls(title='Fakerinos')),
     path('chat/', include('chat.urls')),
