@@ -4,7 +4,6 @@ from . import views
 
 router = DefaultRouter()
 router.register('', views.ArticleViewSet, 'articles')
-router.register('', views.DeckViewSet, 'decks')
 
 urlpatterns = [
     path('', include(router.urls)),

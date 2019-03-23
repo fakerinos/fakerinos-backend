@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Article, Deck
+from .models import Article
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -19,13 +19,4 @@ class ArticleSerializer(serializers.ModelSerializer):
             'published',
             'created',
             'modified',
-        )
-
-
-class DeckSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Deck
-        fields = (
-            'subject',
-            'articles',
         )
