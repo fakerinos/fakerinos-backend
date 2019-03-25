@@ -12,7 +12,6 @@ ROOT_URLCONF = 'fakerinos.urls'
 ALLOWED_HOSTS = ['*']
 SITE_ID = 1
 # endregion
-
 INSTALLED_APPS = [
     # Chat App
     'chat',
@@ -29,6 +28,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
 
     # Account Management
+    'guardian',
     'accounts',
     'rest_framework.authtoken',
     'rest_auth',
@@ -84,6 +84,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+]
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'guardian.backends.ObjectPermissionBackend',
 ]
 
 # region Misc

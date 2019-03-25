@@ -1,2 +1,2 @@
-worker: redis-server --port 6379
+redis: redis-server --port 6379
 web: uvicorn fakerinos.asgi:application --port 5000 --host 0.0.0.0
