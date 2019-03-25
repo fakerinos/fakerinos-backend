@@ -1,10 +1,15 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from fakerinos.models import BaseModel
+import logging
 
 
-class Room(models.Model):
-    max_players = models.IntegerField(default=4)
-    num_players = models.IntegerField()
-    created = models.DateTimeField()
-    players = models.ForeignKey(get_user_model(), on_delete=models.DO_NOTHING, blank=True)
-    status = models.CharField(max_length=128, default='EMPTY')
+class Room(BaseModel):
+    max_players = models.IntegerField(default=4, editable=False)
+    status = models.CharField(max_length=128, default='NEW', editable=False)
+
+    # has a players relation in the Profile model
+
+    def delete_if_empty(self):
+        if self.status != 'NEW' and not self.players.exists():
+            self.delete()
+            logging.info("Room {} is empty. Deleting...".format(self.id))
