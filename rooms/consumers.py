@@ -10,10 +10,13 @@ class RoomConsumer(JsonWebsocketConsumer):
         self.room_group_name = 'room_%s' % self.room_id
         room = Room.objects.get(id=self.room_id)
         user = self.scope['user']
-        if user.is_authenticated and user.profile not in room.players.all():
+        players = room.players.all()
+        if user.is_authenticated and user.profile not in players and len(players) < room.max_players:
             logging.info("User {} joined room {}".format(self.scope['user'].id, room.id))
             user.profile.room = room
             user.profile.save()
+            self.accept()
+        elif user.profile in players:
             self.accept()
         else:
             self.close()

@@ -12,6 +12,7 @@ class RoomSerializer(serializers.ModelSerializer):
             'max_players',
             'status',
             'players',
+            'creator',
         )
         read_only_fields = (
             'players',
