@@ -27,8 +27,8 @@ class TestArticlePermissions(APITestCase):
         self.article = mixer.blend(Article)
         self.article.save()
 
-        self.list_endpoint = reverse('articles-list')
-        self.retrieve_endpoint = reverse('articles-detail', kwargs={'pk': self.article.pk})
+        self.list_endpoint = reverse('article-list')
+        self.retrieve_endpoint = reverse('article-detail', kwargs={'pk': self.article.pk})
 
     # region helpers
     def retrieve_article(self, expected_status, user=None):
@@ -69,7 +69,7 @@ class TestArticlePermissions(APITestCase):
 
     # region no-auth
     def test_noauth_get_article(self):
-        response = self.retrieve_article(status.HTTP_403_FORBIDDEN)
+        response = self.retrieve_article(status.HTTP_200_OK)
 
     def test_noauth_add_article(self):
         response = self.create_article(status.HTTP_403_FORBIDDEN)
@@ -136,7 +136,7 @@ class TestManageArticle(APITestCase):
         self.client.force_login(self.manager)
         self.article = mixer.blend(Article)
         self.article.save()
-        self.list_endpoint = reverse('articles-list')
+        self.list_endpoint = reverse('article-list')
 
     @classmethod
     def get_nonexistent_pks(cls, num=10, fn=mixer.faker.big_integer):
@@ -159,7 +159,7 @@ class TestManageArticle(APITestCase):
     def get_retrieve_endpoint(self, pk=None):
         if pk is None:
             pk = self.article.pk
-        return reverse('articles-detail', kwargs={'pk': pk})
+        return reverse('article-detail', kwargs={'pk': pk})
 
     def list_article(self, expected_status):
         response = self.client.get(self.list_endpoint)

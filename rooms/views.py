@@ -4,7 +4,6 @@ from rest_framework import permissions
 from rest_framework import status
 from .serializers import RoomSerializer
 from .models import Room
-import logging
 
 
 class RoomViewSet(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
