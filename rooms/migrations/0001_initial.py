@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('max_players', models.IntegerField(default=4)),
                 ('num_players', models.IntegerField()),
                 ('created', models.DateTimeField()),
-                ('status', models.CharField(default='EMPTY', max_length=128)),
+                ('status', models.CharField(default='NEW', max_length=128)),
                 ('players', models.ForeignKey(blank=True, on_delete=django.db.models.deletion.DO_NOTHING, to=settings.AUTH_USER_MODEL)),
             ],
         ),
