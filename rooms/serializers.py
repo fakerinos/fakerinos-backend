@@ -3,13 +3,17 @@ from .models import Room
 
 
 class RoomSerializer(serializers.ModelSerializer):
+    # TODO: make `players` a HyperlinkedRelatedField using the `profile-detail` view.
+
     class Meta:
         model = Room
         fields = (
             'id',
             'max_players',
-            'num_players',
-            'players',
-            'created',
             'status',
+            'players',
+            'creator',
+        )
+        read_only_fields = (
+            'players',
         )
