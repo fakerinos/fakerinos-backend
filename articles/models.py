@@ -1,6 +1,6 @@
 from django.db import models
 from fakerinos.models import CreatorModel
-lo
+
 
 class Tag(CreatorModel):
     name = models.CharField(max_length=50)
