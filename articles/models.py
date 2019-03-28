@@ -1,12 +1,11 @@
 from django.db import models
-from fakerinos.models import CreatorModel
 
 
-class Tag(CreatorModel):
+class Tag(models.Model):
     name = models.CharField(max_length=50)
 
 
-class Article(CreatorModel):
+class Article(models.Model):
     headline = models.CharField(max_length=500)
     rating = models.CharField(max_length=50)
     domain = models.URLField(null=True, blank=True)
@@ -18,7 +17,7 @@ class Article(CreatorModel):
     published = models.DateTimeField(null=True, blank=True)
 
 
-class Deck(CreatorModel):
+class Deck(models.Model):
     subject = models.CharField(max_length=50)
     articles = models.ManyToManyField(Article, related_name='decks', blank=True)
 
@@ -27,5 +26,5 @@ class Deck(CreatorModel):
         if self.articles.exists():
             tags = [article.tags.all() for article in self.articles.all()]
             tags = tags[0].union(*tags[1:])
-            return [tag.id for tag in tags]
+            return [tag.pk for tag in tags]
         return []

@@ -1,13 +1,10 @@
 from django.db import models
-from django.contrib.auth import get_user_model
-from fakerinos.models import BaseModel
+from django.contrib.auth.models import AbstractUser
 from rooms.models import Room
 from articles.models import Tag
 
-User = get_user_model()
 
-
-class Profile(BaseModel):
+class User(AbstractUser):
     EDUCATION_CHOICES = (
         ('X', "Unknown"),
         ('KG', "Kindergarten"),
@@ -17,16 +14,12 @@ class Profile(BaseModel):
         ('PG', "Postgraduate"),
         ('PH', "Doctorate"),
     )
-    user = models.OneToOneField(User, on_delete=models.CASCADE, editable=False, related_name='profile')
-    interests = models.ManyToManyField(Tag, related_name='interested_users')
     room = models.ForeignKey(Room, on_delete=models.PROTECT, related_name='players', editable=False, null=True)
-    education = models.CharField(max_length=2, choices=EDUCATION_CHOICES, default='SE')
+    hosted_room = models.OneToOneField(Room, on_delete=models.SET_NULL, related_name='host', editable=False, null=True)
     complete = models.BooleanField(editable=False, default=False)
+    interests = models.ManyToManyField(Tag, related_name='interested_users')
+    education = models.CharField(max_length=2, choices=EDUCATION_CHOICES, default='SE')
 
 
-def create_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
-
-
-models.signals.post_save.connect(create_profile, sender=User)
+def get_anonymous_user_instance(user_model):
+    return user_model(username='Anonymous', )

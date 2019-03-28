@@ -1,11 +1,14 @@
 import json
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission
+from django.contrib.auth import get_user_model
 from mixer.backend.django import mixer
 from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
 from ..models import Article
 from ..serializers import ArticleSerializer
+
+User = get_user_model()
 
 
 class TestArticlePermissions(APITestCase):
@@ -179,7 +182,7 @@ class TestManageArticle(APITestCase):
         response = self.client.get(self.get_retrieve_endpoint(pk))
         self.assertEqual(response.status_code, expected_status, response.content)
         if status.is_success(expected_status):
-            self.assertEqual(self.article.pk, json.loads(response.content)['id'])
+            self.assertEqual(self.article.pk, json.loads(response.content)['pk'])
         return response
 
     def update_article(self, expected_status, pk=None):

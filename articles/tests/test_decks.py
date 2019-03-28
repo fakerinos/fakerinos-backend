@@ -1,26 +1,27 @@
-from . import test_articles
+"""
+1. Populate Articles
+2. Create Deck
+    a. Create links
+        further: how? filter?
+3. Check Deck --> assert(deck.size)
+"""
+
 from ..models import Article, Deck
 from ..serializers import ArticleSerializer, DeckSerializer
 from rest_framework.test import APITestCase
 from rest_framework import status
 from mixer.backend.django import mixer
 from rest_framework.reverse import reverse
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission
+from django.contrib.auth import get_user_model
 
-"""
-1. Populate Articles
-2. Create Deck
-    a. Create links
-        further: how? filter?
-3. Check Deck --> assert(deck.size) 
-"""
-
+User = get_user_model()
 """
 routers --> reverse(<basename>-list) or (<basename>-detail)
 you need Permissions && Users instantiated for testing routers
         # .save will only update the fields with those names
         #self.deck.save(update_fields=["articles"])
-        
+
 permissions:
 
 URL NAME --> queryset-<list or detail>
@@ -48,7 +49,7 @@ class TestDeckAPI(APITestCase):
 
         # Articles
         self.article = mixer.blend(Article, headline='article1', rating='Hot Stuff')
-        self.article2 = mixer.blend(Article,headline='article2', rating='Fake')
+        self.article2 = mixer.blend(Article, headline='article2', rating='Fake')
 
         # Decks
         self.deck = mixer.blend(Deck, subject='test')
@@ -102,6 +103,3 @@ class TestDeckAPI(APITestCase):
         self.deck.articles.add(self.article2)
         # response = self.client.get(reverse('deck-name') + 'test')
         # self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
-

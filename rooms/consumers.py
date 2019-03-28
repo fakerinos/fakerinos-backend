@@ -11,12 +11,12 @@ class RoomConsumer(JsonWebsocketConsumer):
         room = Room.objects.get(id=self.room_id)
         user = self.scope['user']
         players = room.players.all()
-        if user.is_authenticated and user.profile not in players and len(players) < room.max_players:
-            logging.info("User {} joined room {}".format(self.scope['user'].id, room.id))
-            user.profile.room = room
-            user.profile.save()
+        if user.is_authenticated and user not in players and len(players) < room.max_players:
+            logging.info("User {} joined room {}".format(self.scope['user'].pk, room.pk))
+            user.room = room
+            user.save()
             self.accept()
-        elif user.profile in players:
+        elif user in players:
             self.accept()
         else:
             self.close()
@@ -24,8 +24,8 @@ class RoomConsumer(JsonWebsocketConsumer):
     def disconnect(self, code):
         user = self.scope['user']
         if user.is_authenticated:
-            room = Room.objects.get(id=user.profile.room.id)
-            user.profile.room = None
-            user.profile.save()
-            logging.info("User {} left room {}".format(user.id, room.id))
+            room = Room.objects.get(id=user.room.pk)
+            user.room = None
+            user.save()
+            logging.info("User {} left room {}".format(user.pk, room.pk))
             room.delete_if_empty()

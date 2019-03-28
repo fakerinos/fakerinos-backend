@@ -20,7 +20,7 @@ class TokenAuthMiddleware:
                 if token_name == 'Token':
                     token = Token.objects.get(key=token_key)
                     scope['user'] = token.user
-                    close_old_connections()  # TODO: why is this here?
+                    close_old_connections()
             except Token.DoesNotExist:
                 scope['user'] = AnonymousUser()
         return self.inner(scope)

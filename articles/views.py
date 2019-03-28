@@ -13,10 +13,10 @@ class ArticleViewSet(ModelViewSet):
 class DeckViewSet(ModelViewSet):
     queryset = Deck.objects.all()
     serializer_class = DeckSerializer
-    permissions = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
 
 
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permissions = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)

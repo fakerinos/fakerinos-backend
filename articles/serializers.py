@@ -11,7 +11,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = (
-            'id',
+            'pk',
             'headline',
             'rating',
             'domain',
@@ -21,8 +21,6 @@ class ArticleSerializer(serializers.ModelSerializer):
             'tags',
             'explanation',
             'published',
-            'created',
-            'modified',
         )
 
 
@@ -39,7 +37,7 @@ class DeckSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deck
         fields = (
-            'id',
+            'pk',
             'subject',
             'articles',
             'tags',
@@ -50,6 +48,6 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = (
-            'id',
+            'pk',
             'name',
         )

@@ -22,6 +22,7 @@ class CreatorModel(BaseModel):
         get_user_model(),
         on_delete=models.SET_NULL,
         related_name='%(class)s_modifier',
+        editable=False,
         null=True
     )
 

@@ -12,39 +12,33 @@ ROOT_URLCONF = 'fakerinos.urls'
 ALLOWED_HOSTS = ['*']
 SITE_ID = 1
 # endregion
+AUTH_USER_MODEL = 'accounts.User'
 INSTALLED_APPS = [
-    # Chat App
+    # Apps
     'chat',
-    'channels',
-
-    # Articles API
+    'accounts',
     'articles',
-
-    # Rooms API
     'rooms',
 
-    # REST Framework
+    # Third Party
+    'channels',
     'rest_framework',
-    'rest_framework_swagger',
-
-    # Account Management
-    'guardian',
-    'accounts',
     'rest_framework.authtoken',
+    'rest_framework_swagger',
     'rest_auth',
     'rest_auth.registration',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'django.contrib.sites',
 
+    # Builtins
+    'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -87,8 +81,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'guardian.backends.ObjectPermissionBackend',
 ]
+DEFAULT_USER_PERMISSIONS = [
+    'add_room',
+]
+
+# region Guardian
+# GUARDIAN_GET_INIT_ANONYMOUS_USER = 'accounts.models.get_anonymous_user_instance'
+# endregion
 
 # region Misc
 WSGI_APPLICATION = 'fakerinos.wsgi.application'
@@ -108,20 +108,22 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',
     'DEFAULT_VERSION': '1.0',
+    'DEFAULT_PERMISSION_CLASSES': (
+        'fakerinos.permissions.StrictDjangoModelPermissions',
+    )
 }
 
 # region REST Auth
-ACCOUNT_EMAIL_REQUIRED = True
-LOGIN_URL = '/api/accounts/login'
-LOGOUT_URL = '/api/accounts/logout'
-LOGIN_REDIRECT_URL = '/api/accounts/user'
+LOGIN_URL = '/api/accounts/login/'
+LOGOUT_URL = '/api/accounts/logout/'
+LOGIN_REDIRECT_URL = '/api/accounts/user/'
+ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 15
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = False
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 ACCOUNT_PRESERVE_USERNAME_CASING = False
 OLD_PASSWORD_FIELD_ENABLED = True
-LOGOUT_ON_PASSWORD_CHANGE = True
 # endregion
-
 # endregion
 
 # region Django Channels

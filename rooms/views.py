@@ -9,24 +9,26 @@ from .models import Room
 class RoomViewSet(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.DjangoModelPermissions,)
 
     def create(self, request, *args, **kwargs):
         # Reject request if user is currently in a room
-        profile = request.user.profile
-        if profile.room:
+        user = request.user
+        if user.room:
             return Response({
-                'detail': 'Cannot create room because you are already in one.'.format(profile.room.id),
-                'room': profile.room.id,
+                'detail': 'Cannot create room because you are already in one.'.format(user.room.pk),
+                'room': user.room.id,
             },
                 status=status.HTTP_400_BAD_REQUEST)
 
-        # Delete all empty rooms that the requesting user has previously created
-        user_rooms = request.user.room_creator.all() | Room.objects.filter(creator=None)
-        if user_rooms.exists():  # If user has created at least one room that still exists
-            for room in user_rooms.all():
-                room.delete_if_empty()
+        # Delete currently hosted room if empty (can happen if the user never joins a room they created)
+        hosted_room = request.user.hosted_room
+        if hosted_room is not None:
+            hosted_room.delete_if_empty()
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        room = serializer.save(creator=request.user)
+        room = serializer.save()
+        user.hosted_room = room
+        user.save()
         return Response({'room': room.id}, status=status.HTTP_201_CREATED)
