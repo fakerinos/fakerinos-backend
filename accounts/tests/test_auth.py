@@ -1,8 +1,10 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from mixer.backend.django import mixer
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
+
+User = get_user_model()
 
 
 # Create your tests here.
@@ -24,7 +26,7 @@ class TestRegister(APITestCase):
         nones = [k for k in body if body[k] is None]
         for k in nones:
             del body[k]
-        return self.client.post(reverse('rest_register'), body, format='json')
+        return self.client.post(reverse('register'), body, format='json')
 
     def test_success(self):
         response = self.register()

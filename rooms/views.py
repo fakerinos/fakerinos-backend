@@ -4,30 +4,33 @@ from rest_framework import permissions
 from rest_framework import status
 from .serializers import RoomSerializer
 from .models import Room
+from .exceptions import AlreadyInRoomException
 import logging
 
 
 class RoomViewSet(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
+    http_method_names = ['get', 'post', 'head', 'options']
 
     def create(self, request, *args, **kwargs):
         # Reject request if user is currently in a room
-        profile = request.user.profile
-        if profile.room:
-            return Response({
-                'detail': 'Cannot create room because you are already in one.'.format(profile.room.id),
-                'room': profile.room.id,
-            },
-                status=status.HTTP_400_BAD_REQUEST)
+        player = request.user.player
+        logging.error(str(player.user))
+        logging.error(str(player.room))
+        if player.room:
+            raise AlreadyInRoomException(
+                'Cannot create room because you are already in room {}.'.format(player.room.id)
+            )
+        # Delete currently hosted room if empty (can happen if the user never joins a room they created)
+        hosted_room = player.hosted_room
+        if hosted_room is not None:
+            hosted_room.delete_if_empty()
 
-        # Delete all empty rooms that the requesting user has previously created
-        user_rooms = request.user.room_creator.all() | Room.objects.filter(creator=None)
-        if user_rooms.exists():  # If user has created at least one room that still exists
-            for room in user_rooms.all():
-                room.delete_if_empty()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        room = serializer.save(creator=request.user)
+        room = serializer.save()
+        player.hosted_room = room
+        player.save()
         return Response({'room': room.id}, status=status.HTTP_201_CREATED)

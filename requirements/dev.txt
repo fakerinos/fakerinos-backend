@@ -3,3 +3,4 @@
 -r common.txt
 pip-chill==0.1.8
 pipdeptree==0.13.2
+codecov

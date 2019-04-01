@@ -1,11 +1,14 @@
 import json
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission
+from django.contrib.auth import get_user_model
 from mixer.backend.django import mixer
 from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
 from ..models import Article
 from ..serializers import ArticleSerializer
+
+User = get_user_model()
 
 
 class TestArticlePermissions(APITestCase):
@@ -27,8 +30,8 @@ class TestArticlePermissions(APITestCase):
         self.article = mixer.blend(Article)
         self.article.save()
 
-        self.list_endpoint = reverse('articles-list')
-        self.retrieve_endpoint = reverse('articles-detail', kwargs={'pk': self.article.pk})
+        self.list_endpoint = reverse('article-list')
+        self.retrieve_endpoint = reverse('article-detail', kwargs={'pk': self.article.pk})
 
     # region helpers
     def retrieve_article(self, expected_status, user=None):
@@ -69,16 +72,16 @@ class TestArticlePermissions(APITestCase):
 
     # region no-auth
     def test_noauth_get_article(self):
-        response = self.retrieve_article(status.HTTP_403_FORBIDDEN)
+        response = self.retrieve_article(status.HTTP_200_OK)
 
     def test_noauth_add_article(self):
-        response = self.create_article(status.HTTP_403_FORBIDDEN)
+        response = self.create_article(status.HTTP_401_UNAUTHORIZED)
 
     def test_noauth_edit_article(self):
-        response = self.update_article(status.HTTP_403_FORBIDDEN)
+        response = self.update_article(status.HTTP_401_UNAUTHORIZED)
 
     def test_noauth_delete_article(self):
-        response = self.delete_article(status.HTTP_403_FORBIDDEN)
+        response = self.delete_article(status.HTTP_401_UNAUTHORIZED)
 
     # endregion
 
@@ -136,7 +139,7 @@ class TestManageArticle(APITestCase):
         self.client.force_login(self.manager)
         self.article = mixer.blend(Article)
         self.article.save()
-        self.list_endpoint = reverse('articles-list')
+        self.list_endpoint = reverse('article-list')
 
     @classmethod
     def get_nonexistent_pks(cls, num=10, fn=mixer.faker.big_integer):
@@ -159,7 +162,7 @@ class TestManageArticle(APITestCase):
     def get_retrieve_endpoint(self, pk=None):
         if pk is None:
             pk = self.article.pk
-        return reverse('articles-detail', kwargs={'pk': pk})
+        return reverse('article-detail', kwargs={'pk': pk})
 
     def list_article(self, expected_status):
         response = self.client.get(self.list_endpoint)
@@ -179,7 +182,7 @@ class TestManageArticle(APITestCase):
         response = self.client.get(self.get_retrieve_endpoint(pk))
         self.assertEqual(response.status_code, expected_status, response.content)
         if status.is_success(expected_status):
-            self.assertEqual(self.article.pk, json.loads(response.content)['id'])
+            self.assertEqual(self.article.pk, json.loads(response.content)['pk'])
         return response
 
     def update_article(self, expected_status, pk=None):
