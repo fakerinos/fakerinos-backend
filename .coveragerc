@@ -6,3 +6,8 @@ omit =
     *sgi.py,
     *apps.py,
     manage.py,
+
+[report]
+fail_under = 100
+skip_covered = True
+sort = Cover

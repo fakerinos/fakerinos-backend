@@ -1,4 +1,7 @@
 language: python
+
+sudo: false
+
 python:
   - "3.6"
 
@@ -10,3 +13,6 @@ install:
 
 script:
   - pytest -c pytest_travis.ini
+
+after_script:
+  - codecov

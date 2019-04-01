@@ -15,6 +15,7 @@ SITE_ID = 1
 AUTH_USER_MODEL = 'accounts.User'
 INSTALLED_APPS = [
     # Apps
+    'fakerinos',
     'chat',
     'accounts',
     'articles',
@@ -110,7 +111,11 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSION': '1.0',
     'DEFAULT_PERMISSION_CLASSES': (
         'fakerinos.permissions.StrictDjangoModelPermissions',
-    )
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
 }
 
 # region REST Auth

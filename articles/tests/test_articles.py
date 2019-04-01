@@ -75,13 +75,13 @@ class TestArticlePermissions(APITestCase):
         response = self.retrieve_article(status.HTTP_200_OK)
 
     def test_noauth_add_article(self):
-        response = self.create_article(status.HTTP_403_FORBIDDEN)
+        response = self.create_article(status.HTTP_401_UNAUTHORIZED)
 
     def test_noauth_edit_article(self):
-        response = self.update_article(status.HTTP_403_FORBIDDEN)
+        response = self.update_article(status.HTTP_401_UNAUTHORIZED)
 
     def test_noauth_delete_article(self):
-        response = self.delete_article(status.HTTP_403_FORBIDDEN)
+        response = self.delete_article(status.HTTP_401_UNAUTHORIZED)
 
     # endregion
 
