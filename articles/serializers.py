@@ -41,6 +41,8 @@ class DeckSerializer(serializers.ModelSerializer):
             'subject',
             'articles',
             'tags',
+            'description',
+            'thumbnail_url',
         )
 
 
