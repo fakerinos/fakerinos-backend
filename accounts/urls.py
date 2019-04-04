@@ -6,6 +6,8 @@ from . import views
 
 router = DefaultRouter()
 router.register('user', views.UserViewSet)
+router.register('profile', views.ProfileViewSet)
+router.register('player', views.PlayerViewSet)
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
