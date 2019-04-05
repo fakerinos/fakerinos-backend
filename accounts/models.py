@@ -2,11 +2,13 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from datetime import datetime
+from guardian.mixins import GuardianUserMixin
+from django.conf import settings
 from rooms.models import Room
 from articles.models import Tag, Deck
 
 
-class User(AbstractUser):
+class User(GuardianUserMixin, AbstractUser):
     pass
 
 
@@ -83,4 +85,4 @@ def get_anonymous_user_instance(user_model) -> User:
     Used by Django-guardian during migrations.
     Should return a User instance
     """
-    return user_model(username='Anonymous', )
+    return user_model(username=settings.ANONYMOUS_USER_NAME, )

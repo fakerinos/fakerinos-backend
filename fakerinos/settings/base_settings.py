@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'rooms',
 
     # Third Party
+    'guardian',
     'channels',
     'rest_framework',
     'rest_framework.authtoken',
@@ -82,13 +83,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
+    'guardian.backends.ObjectPermissionBackend',
 ]
 DEFAULT_USER_PERMISSIONS = [
     'add_room',
 ]
 
 # region Guardian
-# GUARDIAN_GET_INIT_ANONYMOUS_USER = 'accounts.models.get_anonymous_user_instance'
+GUARDIAN_GET_INIT_ANONYMOUS_USER = 'accounts.models.get_anonymous_user_instance'
+ANONYMOUS_USER_NAME = None
 # endregion
 
 # region Misc
