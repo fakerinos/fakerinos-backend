@@ -7,9 +7,11 @@ class Tag(models.Model):
 
 class Article(models.Model):
     headline = models.CharField(max_length=500)
-    rating = models.CharField(max_length=50)
-    domain = models.URLField(blank=True)
     text = models.TextField(blank=True)
+    truth_value = models.BooleanField(null=True, blank=True)
+    rating = models.CharField(max_length=50, blank=True)
+    domain = models.URLField(blank=True)
+    url = models.URLField(max_length=500, blank=True)
     thumbnail_url = models.URLField(max_length=500, blank=True)
     author = models.CharField(max_length=100, blank=True)
     tags = models.ManyToManyField(Tag, related_name='articles', blank=True)

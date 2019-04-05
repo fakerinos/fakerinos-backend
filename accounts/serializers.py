@@ -31,10 +31,8 @@ class PlayerSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(read_only=True, slug_field='username')
-    interests = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
+    interests = serializers.SlugRelatedField(queryset=Tag.objects.all(), many=True, slug_field='name')
     starred_decks = serializers.PrimaryKeyRelatedField(queryset=Deck.objects.all(), many=True)
-    education = serializers.ChoiceField(Profile.EDUCATION_CHOICES)
-    gender = serializers.ChoiceField(Profile.GENDER_CHOICES)
     is_complete = serializers.BooleanField(read_only=True)
     age = serializers.IntegerField(allow_null=True, read_only=True)
 
