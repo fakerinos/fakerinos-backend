@@ -3,9 +3,10 @@ from .models import Article, Deck, Tag
 
 
 class ArticleSerializer(serializers.ModelSerializer):
-    tags = serializers.PrimaryKeyRelatedField(
+    tags = serializers.SlugRelatedField(
         many=True,
-        queryset=Tag.objects.all()
+        queryset=Tag.objects.all(),
+        slug_field='name',
     )
 
     class Meta:
@@ -13,6 +14,8 @@ class ArticleSerializer(serializers.ModelSerializer):
         fields = (
             'pk',
             'headline',
+            'truth_value',
+            'url',
             'rating',
             'domain',
             'text',
@@ -32,7 +35,7 @@ class DeckSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
 
     def get_tags(self, obj):
-        return obj.tags
+        return [tag.name for tag in obj.tags]
 
     class Meta:
         model = Deck
@@ -50,6 +53,5 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = (
-            'pk',
             'name',
         )
