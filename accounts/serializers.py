@@ -10,20 +10,19 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'pk',
-            'username'
+            'username',
         )
 
 
 class PlayerSerializer(serializers.ModelSerializer):
-    pk = serializers.PrimaryKeyRelatedField(read_only=True)
+    user = serializers.SlugRelatedField(read_only=True, slug_field='username')
     room = serializers.PrimaryKeyRelatedField(read_only=True, default=None)
     hosted_room = serializers.PrimaryKeyRelatedField(read_only=True, default=None)
 
     class Meta:
         model = Player
         fields = (
-            'pk',
+            'user',
             'room',
             'hosted_room',
             'skill_rating',
@@ -31,7 +30,7 @@ class PlayerSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    pk = serializers.PrimaryKeyRelatedField(read_only=True)
+    user = serializers.SlugRelatedField(read_only=True, slug_field='username')
     interests = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
     starred_decks = serializers.PrimaryKeyRelatedField(queryset=Deck.objects.all(), many=True)
     education = serializers.ChoiceField(Profile.EDUCATION_CHOICES)
@@ -42,7 +41,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = (
-            'pk',
+            'user',
             'interests',
             'education',
             'is_complete',

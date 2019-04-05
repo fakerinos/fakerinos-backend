@@ -56,3 +56,11 @@ class TestUserViewSet(APITestCase):
 
     def test_noauth_partial_update_user(self):
         pass
+
+
+class TestPlayerViewSet(APITestCase):
+    pass
+
+
+class TestProfileViewSet(APITestCase):
+    pass

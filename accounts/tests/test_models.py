@@ -1,6 +1,7 @@
 from ..models import Profile, Player, get_anonymous_user_instance
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 User = get_user_model()
 
@@ -19,4 +20,4 @@ class TestUser(TestCase):
 
     def test_get_anonymous_user_instance(self):
         instance = get_anonymous_user_instance(self.model)
-        self.assertEqual(instance.username, 'Anonymous')
+        self.assertEqual(instance.username, settings.ANONYMOUS_USER_NAME)

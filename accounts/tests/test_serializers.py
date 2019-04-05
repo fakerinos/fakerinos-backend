@@ -16,13 +16,13 @@ class TestUserSerializer(APITestCase):
     def test_expected_fields(self):
         instance = mixer.blend(self.model)
         serializer = self.serializer_class(instance)
-        expected_fields = ['pk', 'username']
+        expected_fields = ['username']
         self.assertEqual(set(expected_fields), set(serializer.data.keys()))
 
     def test_expected_values(self):
         instance = mixer.blend(self.model)
         serializer = self.serializer_class(instance)
-        expected_values = {'pk': 1, 'username': instance.username}
+        expected_values = {'username': instance.username}
         self.assertEqual(expected_values, serializer.data)
 
     pass
@@ -34,7 +34,7 @@ class TestProfileSerializer(APITestCase):
         self.serializer_class = ProfileSerializer
         self.user = mixer.blend(User)
         self.expected_fields = [
-            'pk',
+            'user',
             'education',
             'interests',
             'is_complete',
@@ -56,7 +56,7 @@ class TestProfileSerializer(APITestCase):
         instance = self.user.profile
         serializer = self.serializer_class(instance)
         expected_values = {
-            'pk': 1,
+            'user': instance.user.username,
             'education': instance.education,
             'interests': list(instance.interests.all()),
             'is_complete': instance.is_complete,
@@ -76,8 +76,7 @@ class TestPlayerSerializer(APITestCase):
         self.model = Player
         self.serializer_class = PlayerSerializer
         self.user = mixer.blend(User)
-        self.expected_fields = ['pk', 'room', 'hosted_room', 'skill_rating']
-        self.expected_values = {'pk': 1, 'room': None, 'hosted_room': None, 'skill_rating': 500}
+        self.expected_fields = ['user', 'room', 'hosted_room', 'skill_rating']
 
     def test_expected_fields(self):
         instance = self.user.player
@@ -87,4 +86,5 @@ class TestPlayerSerializer(APITestCase):
     def test_expected_values(self):
         instance = self.user.player
         serializer = self.serializer_class(instance)
-        self.assertEqual(self.expected_values, serializer.data)
+        expected_values = {'user': instance.user.username, 'room': None, 'hosted_room': None, 'skill_rating': 500}
+        self.assertEqual(expected_values, serializer.data)
