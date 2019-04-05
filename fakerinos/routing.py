@@ -1,9 +1,9 @@
-from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter, ChannelNameRouter
 from fakerinos.middleware import TokenAuthMiddlewareStack
 from django.urls import path
 import chat.routing
 import rooms.routing
+from rooms.consumers import GameConsumer
 
 application = ProtocolTypeRouter(
     {
@@ -15,5 +15,8 @@ application = ProtocolTypeRouter(
                 ]))]
             )
         ),
+        "channel": ChannelNameRouter({
+            "game-consumer": GameConsumer,
+        }),
     }
 )
