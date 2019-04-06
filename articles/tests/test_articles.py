@@ -72,7 +72,7 @@ class TestArticlePermissions(APITestCase):
 
     # region no-auth
     def test_noauth_get_article(self):
-        response = self.retrieve_article(status.HTTP_200_OK)
+        response = self.retrieve_article(status.HTTP_401_UNAUTHORIZED)
 
     def test_noauth_add_article(self):
         response = self.create_article(status.HTTP_401_UNAUTHORIZED)

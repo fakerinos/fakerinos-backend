@@ -32,10 +32,7 @@ class DeckSerializer(serializers.ModelSerializer):
         many=True,
         queryset=Article.objects.all()
     )
-    tags = serializers.SerializerMethodField()
-
-    def get_tags(self, obj):
-        return [tag.name for tag in obj.tags]
+    tags = serializers.SlugRelatedField(slug_field='name', many=True, read_only=True)
 
     class Meta:
         model = Deck
