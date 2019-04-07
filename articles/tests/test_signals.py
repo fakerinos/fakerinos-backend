@@ -35,7 +35,7 @@ class TestDeckSignals(APITestCase):
     def test_deck_articles_changed_updater_called(self):
         with patch.object(receivers, 'update_deck_tags') as mock_updater:
             self.deck.articles.set([self.article2])
-            self.assertEqual(mock_updater.call_count, 1)
+            self.assertEqual(mock_updater.call_count, 2)
 
     def test_deck_articles_changed_deck_tags_updated(self):
         self.deck.articles.set([self.article2])
@@ -58,7 +58,7 @@ class TestDeckSignals(APITestCase):
     def test_article_tags_changed_updater_called(self):
         with patch.object(receivers, 'update_deck_tags') as mock_updater:
             self.article1.tags.set([self.tag2])
-            self.assertEqual(mock_updater.call_count, 1)
+            self.assertEqual(mock_updater.call_count, 2)
 
     def test_article_tags_changed_deck_tags_updated(self):
         self.article1.tags.set([self.tag2])

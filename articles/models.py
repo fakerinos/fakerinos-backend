@@ -18,22 +18,13 @@ class Article(models.Model):
     explanation = models.TextField(blank=True)
     published = models.DateTimeField(null=True, blank=True)
 
-    # def save(self, *args, **kwargs):
-    #     super(Article, self).save(*args, **kwargs)
-    #     for deck in self.decks.all():
-    #         deck.save()
-
 
 class Deck(models.Model):
     subject = models.CharField(max_length=50, unique=True)
     articles = models.ManyToManyField(Article, related_name='decks')
     description = models.CharField(max_length=200, blank=True)
     thumbnail_url = models.URLField(max_length=500, blank=True)
-    tags = models.ManyToManyField(Tag, related_name='tags')
+    tags = models.ManyToManyField(Tag, related_name='tags', blank=True, editable=False)
 
     # Has a 'starrers' M2M relation in accounts.profile
-
-    # def save(self, *args, **kwargs):
-    #     super(Deck, self).save(*args, **kwargs)
-    #     self.tags.set(self.articles.all().values_list('tags', flat=True))
-    #     super(Deck, self).save()
+    # Has a 'finishers' M2M relation in accounts.profile

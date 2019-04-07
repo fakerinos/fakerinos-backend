@@ -31,6 +31,7 @@ class Profile(models.Model):
     interests = models.ManyToManyField(Tag, related_name='interested_users', blank=True)
     starred_decks = models.ManyToManyField(Deck, related_name='starrers', blank=True)
     onboarded = models.BooleanField(default=False, blank=True)
+    finished_decks = models.ManyToManyField(Deck, related_name='finishers', blank=True)
 
     @property
     def is_complete(self):
