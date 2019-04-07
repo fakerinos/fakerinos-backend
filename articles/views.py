@@ -32,17 +32,6 @@ class DeckViewSet(ModelViewSet):
         return tagged_decks
 
 
-class RecommendedDecksViewSet(generics.ListAPIView):
-    serializer_class = DeckSerializer
-    permission_classes = (permissions.DjangoModelPermissions,)
-
-    def get_queryset(self):
-        user = self.request.user
-        tags = user.profile.interests.all()
-        tagged_decks = Deck.objects.filter(tags__in=tags).distinct()[:10]
-        return tagged_decks
-
-
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer

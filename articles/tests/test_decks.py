@@ -16,18 +16,6 @@ from django.contrib.auth.models import Permission
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-"""
-routers --> reverse(<basename>-list) or (<basename>-detail)
-you need Permissions && Users instantiated for testing routers
-        # .save will only update the fields with those names
-        #self.deck.save(update_fields=["articles"])
-
-permissions:
-
-URL NAME --> queryset-<list or detail>
-list --> object.get.all(many=True)
-detail --> object.get(pk=<value>)
-"""
 
 
 class TestDeckAPI(APITestCase):
@@ -48,41 +36,26 @@ class TestDeckAPI(APITestCase):
         self.manager.user_permissions.add(*self.can_manage_articles)
 
         # Articles
-        self.article = mixer.blend(Article, headline='article1', rating='Hot Stuff')
-        self.article2 = mixer.blend(Article, headline='article2', rating='Fake')
+        self.true_article = mixer.blend(Article)
+        self.false_article = mixer.blend(Article)
 
         # Decks
-        self.deck = mixer.blend(Deck, subject='test')
-        self.deck.save()
+        self.deck = mixer.blend(Deck)
 
-        Deck.objects.create(subject='test')
-
-    # Unit Function Tests
-    def test_article_instantiated(self):
-        assert isinstance(self.article, Article)
-        self.assertEqual(self.article.headline, "article1")
-        self.assertEqual(self.article2.headline, "article2")
+    # TODO: move these tests to test_models.py
+    def test_article_created(self):
+        self.assertEqual(Article.objects.count(), 2)
 
     def test_deck_created(self):
-        decks = Deck.objects.count()
-        self.assertEqual(decks, 2)
+        self.assertEqual(Deck.objects.count(), 1)
 
     def test_link_deck_to_articles(self):
         self.client.force_login(self.adder)
-        self.deck.articles.add(self.article)
-        self.deck.articles.add(self.article2)
-        self.assertEqual(self.deck.articles.all()[1].headline, "article2")
+        self.deck.articles.add(self.true_article)
+        self.deck.articles.add(self.false_article)
+        self.assertEqual(set(self.deck.articles.all()), {self.true_article, self.false_article})
 
-    def test_filter_through_links(self):
-        self.client.force_login(self.adder)
-        self.deck.articles.add(self.article)
-        self.deck.articles.add(self.article2)
-        self.assertEqual(self.deck.articles.all().filter(headline="article2").exists(), True)
-
-    def test_get_article_from_filter(self):
-        self.deck.articles.add(self.article)
-        self.assertEqual(self.deck.articles.all().get(headline="article1").rating, "Hot Stuff")
-
+    # TODO: move these tests to test_views.py
     # Unit Routing Tests
     def test_routing_works(self):
         response = self.client.get(reverse('deck-list'))
@@ -92,14 +65,9 @@ class TestDeckAPI(APITestCase):
         response = self.client.get(reverse('deck-detail', kwargs={'pk': self.deck.pk}))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_routing_deck_to_article(self):
-        self.client.force_login(self.adder)
-        # TODO add custom router to hyperlink from filter
-        'Serializers deal with the JSON passing of info'
-
     def test_specifically(self):
         self.client.force_login(self.adder)
-        self.deck.articles.add(self.article)
-        self.deck.articles.add(self.article2)
+        # self.deck.articles.add(self.true_article)
+        # self.deck.articles.add(self.false_article)
         # response = self.client.get(reverse('deck-name') + 'test')
         # self.assertEqual(response.status_code, status.HTTP_200_OK)
