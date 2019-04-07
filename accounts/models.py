@@ -22,53 +22,24 @@ class Player(models.Model):
 
 
 class Profile(models.Model):
-    EDUCATION_UNKNOWN = 0
-    EDUCATION_KINDERGARTEN = 1
-    EDUCATION_PRIMARY = 2
-    EDUCATION_SECONDARY = 3
-    EDUCATION_UNDERGRADUATE = 4
-    EDUCATION_POSTGRADUATE = 5
-    EDUCATION_DOCTORATE = 6
-    EDUCATION_CHOICES = (
-        (EDUCATION_UNKNOWN, "Unknown"),
-        (EDUCATION_KINDERGARTEN, "Kindergarten"),
-        (EDUCATION_PRIMARY, "Primary"),
-        (EDUCATION_SECONDARY, "Secondary"),
-        (EDUCATION_UNDERGRADUATE, "Undergraduate"),
-        (EDUCATION_POSTGRADUATE, "Postgraduate"),
-        (EDUCATION_DOCTORATE, "Doctorate"),
-    )
-
-    GENDER_UNKNOWN = 0
-    GENDER_MALE = 1
-    GENDER_FEMALE = 2
-    GENDER_NON_BINARY = 3
-    GENDER_SECRET = 4
-    GENDER_CHOICES = (
-        (GENDER_UNKNOWN, "Unknown"),
-        (GENDER_MALE, "Male"),
-        (GENDER_FEMALE, "Female"),
-        (GENDER_NON_BINARY, "Non-binary"),
-        (GENDER_SECRET, "Secret"),
-    )
-
     user = models.OneToOneField(User, primary_key=True, editable=False, on_delete=models.CASCADE)
-    education = models.PositiveSmallIntegerField(choices=EDUCATION_CHOICES, default=EDUCATION_UNKNOWN, blank=True)
+    education = models.CharField(max_length=50, default="Unknown", blank=True)
+    gender = models.CharField(max_length=50, default="Unknown", blank=True)
     birth_date = models.DateField(null=True, blank=True)
-    gender = models.PositiveSmallIntegerField(choices=GENDER_CHOICES, default=GENDER_UNKNOWN, blank=True)
     name = models.CharField(max_length=255, blank=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
-    interests = models.ManyToManyField(Tag, related_name='interested_users')
-    starred_decks = models.ManyToManyField(Deck, related_name='starrers')
+    interests = models.ManyToManyField(Tag, related_name='interested_users', blank=True)
+    starred_decks = models.ManyToManyField(Deck, related_name='starrers', blank=True)
     onboarded = models.BooleanField(default=False, blank=True)
+    finished_decks = models.ManyToManyField(Deck, related_name='finishers', blank=True)
 
     @property
     def is_complete(self):
         conditions = [
-            self.education != self.EDUCATION_UNKNOWN,
+            self.education != "Unknown",
             len(self.interests.all()),
             self.birth_date is not None,
-            self.gender != self.GENDER_UNKNOWN,
+            self.gender != "Unknown",
             self.avatar is not None,
             self.name,
         ]

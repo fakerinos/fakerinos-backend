@@ -8,4 +8,4 @@ class StrictDjangoModelPermissions(permissions.DjangoModelPermissions):
 
 class ObjectOnlyPermissions(permissions.DjangoObjectPermissions):
     def has_permission(self, request, view):
-        return True
+        return request.user.is_authenticated

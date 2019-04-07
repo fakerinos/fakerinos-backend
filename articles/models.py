@@ -2,14 +2,16 @@ from django.db import models
 
 
 class Tag(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
 
 
 class Article(models.Model):
     headline = models.CharField(max_length=500)
-    rating = models.CharField(max_length=50)
-    domain = models.URLField(blank=True)
     text = models.TextField(blank=True)
+    truth_value = models.BooleanField(null=True, blank=True, default=None)
+    rating = models.CharField(max_length=50, blank=True)
+    domain = models.URLField(blank=True)
+    url = models.URLField(max_length=500, blank=True)
     thumbnail_url = models.URLField(max_length=500, blank=True)
     author = models.CharField(max_length=100, blank=True)
     tags = models.ManyToManyField(Tag, related_name='articles', blank=True)
@@ -18,17 +20,11 @@ class Article(models.Model):
 
 
 class Deck(models.Model):
-    subject = models.CharField(max_length=50)
+    subject = models.CharField(max_length=50, unique=True)
     articles = models.ManyToManyField(Article, related_name='decks')
     description = models.CharField(max_length=200, blank=True)
     thumbnail_url = models.URLField(max_length=500, blank=True)
+    tags = models.ManyToManyField(Tag, related_name='tags', blank=True, editable=False)
 
     # Has a 'starrers' M2M relation in accounts.profile
-
-    @property
-    def tags(self):
-        if self.articles.exists():
-            tags = [article.tags.all() for article in self.articles.all()]
-            tags = tags[0].union(*tags[1:])
-            return [tag.pk for tag in tags]
-        return []
+    # Has a 'finishers' M2M relation in accounts.profile
