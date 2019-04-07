@@ -31,6 +31,22 @@ class DeckViewSet(ModelViewSet):
         tagged_decks = Deck.objects.filter(tags__in=tags).distinct()[:10]
         return tagged_decks
 
+    @action(detail=True, methods=['post'])
+    def mark_finished(self, request, *args, **kwargs):
+        deck = self.get_object()
+        profile = request.user.profile
+        profile.finished_decks.add(deck)
+        profile.save()
+        return Response(status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'])
+    def star(self, request, *args, **kwargs):
+        deck = self.get_object()
+        profile = request.user.profile
+        profile.starred_decks.add(deck)
+        profile.save()
+        return Response(status.HTTP_200_OK)
+
 
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
