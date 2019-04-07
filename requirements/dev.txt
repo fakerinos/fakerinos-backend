@@ -1,11 +1,6 @@
 # Common requirements for development
 
 -r common.txt
-mixer
-pytest
-pytest-cov
-pytest-django
-pytest-dotenv
-pip-chill
-pipdeptree
+pip-chill==0.1.8
+pipdeptree==0.13.2
 codecov
