@@ -7,4 +7,5 @@ router.register('', views.RoomViewSet, 'rooms')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('<room_name>', include(router.urls)),
 ]

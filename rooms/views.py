@@ -33,5 +33,5 @@ class RoomViewSet(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
         room = serializer.save()
         player.hosted_room = room
         player.save()
-        Room.objects.create()
         return Response({'room': room.id}, status=status.HTTP_201_CREATED)
+

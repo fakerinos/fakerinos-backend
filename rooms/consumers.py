@@ -58,7 +58,6 @@ class RoomConsumer(JsonWebsocketConsumer):
         else:
             self.close()
 
-
     def disconnect(self, code):
         user = self.scope['user']
         if user.is_authenticated:
@@ -108,8 +107,6 @@ class GameConsumer(WebsocketConsumer):
     def websocket_connect(self, message):
         """self.game_group_name = 'game_%s'"""
         self.accept()
-
-
 
     def websocket_disconnect(self, message):
         """
