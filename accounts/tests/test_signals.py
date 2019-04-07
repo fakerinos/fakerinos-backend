@@ -62,7 +62,7 @@ class TestSignals(TestCase):
     def test_assign_default_user_group_bad_perm_names(self):
         random_perm_names = [mixer.faker.pystr() for _ in range(100)]
         with patch.object(settings, 'DEFAULT_USER_PERMISSIONS', new=random_perm_names) as mock_perm_names:
-            # self.assertRaises(ValueError, self.model.objects.create)
+            # self.assertRaises(ValueError, mixer.blend, self.model)
             user = self.model()
             self.assertRaises(ValueError, receivers.assign_default_user_group, self.model, user, True)
 

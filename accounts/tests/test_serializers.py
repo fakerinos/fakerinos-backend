@@ -54,6 +54,8 @@ class TestProfileSerializer(APITestCase):
 
     def test_expected_values(self):
         instance = self.user.profile
+        instance.birth_date = mixer.faker.date_of_birth()
+        instance.save()
         serializer = self.serializer_class(instance)
         expected_values = {
             'user': instance.user.username,
@@ -61,7 +63,7 @@ class TestProfileSerializer(APITestCase):
             'interests': list(instance.interests.all()),
             'is_complete': instance.is_complete,
             'age': instance.age,
-            'birth_date': instance.birth_date,
+            'birth_date': instance.birth_date.strftime('%Y-%m-%d'),
             'gender': instance.gender,
             'name': instance.name,
             'avatar': instance.avatar,

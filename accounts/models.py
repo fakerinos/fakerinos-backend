@@ -28,8 +28,8 @@ class Profile(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     name = models.CharField(max_length=255, blank=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
-    interests = models.ManyToManyField(Tag, related_name='interested_users')
-    starred_decks = models.ManyToManyField(Deck, related_name='starrers')
+    interests = models.ManyToManyField(Tag, related_name='interested_users', blank=True)
+    starred_decks = models.ManyToManyField(Deck, related_name='starrers', blank=True)
     onboarded = models.BooleanField(default=False, blank=True)
 
     @property

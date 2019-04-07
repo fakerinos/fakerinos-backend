@@ -16,14 +16,15 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet, ):
     lookup_field = 'username'
 
 
-class ProfileViewSet(viewsets.ModelViewSet, ):
+class ProfileViewSet(viewsets.ReadOnlyModelViewSet,
+                     mixins.UpdateModelMixin, ):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     permission_classes = (ObjectOnlyPermissions,)
     lookup_field = 'user__username'
 
 
-class PlayerViewSet(viewsets.ReadOnlyModelViewSet):
+class PlayerViewSet(viewsets.ReadOnlyModelViewSet, ):
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
     permission_classes = (ObjectOnlyPermissions,)
