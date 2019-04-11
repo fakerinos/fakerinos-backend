@@ -11,9 +11,13 @@ class Room(models.Model):
     # has a host relation in the User model
 
     def delete_if_empty(self):
+        logging.info("running delete_if_empty")
+        logging.info(self.players.all())
         if self.is_empty():
             logging.info("Room {} is empty. Deleting...".format(self.pk))
             self.delete()
+        else:
+            logging.info("ROOM NOT DELETED LA SIAL")
 
     def is_empty(self):
         return not self.players.exists()

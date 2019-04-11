@@ -64,7 +64,7 @@ class RoomViewSet(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
         room.delete(self)
         request.user.player.hosted_room = None
 
-    @action(detail=False)
+    # @action(detail=False)
 
 
 
