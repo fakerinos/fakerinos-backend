@@ -11,10 +11,13 @@ from django.core import serializers
 
 """
 ### TODOs
-1. how to send extra content through json --> subject
+1. how to send extra content through json --> subject 
+    -- self.scope['url_route']['kwargs'][<url_part_name_self_defined_yeah>]
 2. what is in websocket_connect(self,message) ==> WHATS IN MESSAGE
 3. ARE WE USING ASYNC TO SYNC
 4. ROOM must have host
+5. WHY DOESNT room 1 WORK ??????
+6. SERIOUSLY HOW TO DELETE ROOMS LA
 ###
 
 types --> determines which handler is called for
@@ -69,54 +72,45 @@ class RoomConsumer(JsonWebsocketConsumer):
         self.find_room(message=message)
 
     def find_room(self, message):
+        #TODO deck needs to be initialized YOOOO
         logging.info(".. entering find_room handler ..")
+        logging.info("i need to know the type " + str(type(self.scope['url_route']['kwargs']['subject'])))
+        subject = self.scope['url_route']['kwargs']['subject']
+        room_pk = None
+        #TODO am i searching for subject
+        try:
+            room_pk = self.scope['url_route']['kwargs']['room_pk']
+        except Exception as e:
+            logging.info("find room :: No room name found")
+            logging.info(e)
+        if room_pk != None:
+            self.join_room(Room.objects.get(pk=room_pk))
+            pass
+
         # TODO get search from input (during connection)
         # if there is rooms with same subject -> check if avail -> else if not ->
-        if Room.objects.filter(subject="test").exists():
-            for room in Room.objects.filter(subject="test"):
-                if self.user.is_authenticated and self.user.profile not in room.players.all() and len(
-                        room.players.all()) < room.max_players:
-                    logging.info("User {} joined room {}".format(self.scope['user'].id, room.id))
-                    self.user.player.room = room
-                    self.user.player.save()
-                    # TODO add into group
-                    self.room_group_name = 'room_%s' % room.pk
-                    async_to_sync(self.channel_layer.group_add)(
-                        self.room_group_name,
-                        self.channel_name
-                    )
-                    logging.info("you here")
-                    # async_to_sync(self.channel_layer.group_send)(
-                    #     self.room_group_name,
-                    #     {
-                    #         "type": "send_json",
-                    #         "message": "please work",
-                    #     }
-                    # )
-
-                elif self.user.profile in room.players.all():
-                    # TODO how to handle if user already in room --> will that happen lol
-                    logging.info("Already in room bro")
-                    return None
+        if Room.objects.filter(subject=subject).exists():
+            for room in Room.objects.filter(subject=subject):
+                logging.info("wow SAME SUBJECT FOUND")
+                self.join_room(room)
             # if there is still no room available
             if self.user.player.room is None:
                 logging.info("all rooms filled")
-                self.send_json({
-                    "type": "create_room",
-                })
+                self.create_room(subject)
 
         # means no room with same subject
         else:
             logging.info("room doesnt exist")
             # create room
-            self.create_room(message=message)
-            self.room_group_name = 'room_%s' % self.user.player.room.pk
+            self.create_room(subject)
 
-    def create_room(self, message):
+
+    def create_room(self, subject):
         logging.info(".. entering create room handler ..")
         # TODO create room with subject and add host
-        room = Room.objects.create(subject="test")
+        room = Room.objects.create(subject=subject)
         logging.info("User {} CREATED room {}".format(self.scope['user'].id, room.id))
+        self.room_group_name = 'room_%s' % self.user.player.room.pk
         self.user.player.room = room
         self.user.player.save()
         # TODO create group
@@ -131,6 +125,33 @@ class RoomConsumer(JsonWebsocketConsumer):
         #         "message": "please work",
         #     }
         # ))
+
+    def join_room(self, room_object):
+        room = room_object
+        if self.user.is_authenticated and self.user.profile not in room.players.all() and len(room.players.all()) < room.max_players:
+            logging.info("User {} joined room {}".format(self.scope['user'].id, room.id))
+            self.user.player.room = room
+            self.user.player.save()
+            # TODO add into group
+            self.room_group_name = 'room_%s' % room.pk
+            async_to_sync(self.channel_layer.group_add)(
+                self.room_group_name,
+                self.channel_name
+            )
+            logging.info("you here")
+            # async_to_sync(self.channel_layer.group_send)(
+            #     self.room_group_name,
+            #     {
+            #         "type": "send_json",
+            #         "message": "please work",
+            #     }
+            # )
+
+        elif self.user.profile in room.players.all():
+            # TODO how to handle if user already in room --> will that happen lol
+            logging.info("Already in room bro")
+            return None
+
 
     # def websocket_connect(self, message):
     #     self.room_id = self.scope['url_route']['kwargs']['room_name']
@@ -164,7 +185,6 @@ class RoomConsumer(JsonWebsocketConsumer):
     #         self.close()
 
     def disconnect(self, code):
-        # TODO delete player from room
         logging.info(".. entering disconnect handler ..")
         logging.info("precheck all rooms")
         logging.info(Room.objects.all())
@@ -172,16 +192,17 @@ class RoomConsumer(JsonWebsocketConsumer):
         room = user.player.room
         logging.info("deleting room from player and room itself")
         try:
+            #TODO what if room is still exists because plaayer disconnects wrongly
             if user.is_authenticated:
-                logging.info("how many people in room :: " + str(len(room.players.all())))
+                # logging.info("how many people in room :: " + str(len(room.players.all())))
                 user.player.room = None
                 user.save()
-                logging.info("just for good measure")
-                logging.info(user.player.room)
-                logging.info(user.player.hosted_room)
+                # logging.info("just for good measure")
+                # logging.info(user.player.room)
+                # logging.info(user.player.hosted_room)
                 # if user.player.hosted_room.pk == room.pk:
                 #     logging.info('yes same')
-                logging.info("so you left ?")
+                # logging.info("so you left ?")
                 logging.info("REALLY ??? :: " + str(len(room.players.all())))
                 logging.info("User {} left room {}".format(user.pk, room.pk))
                 room.delete_if_empty()
@@ -207,15 +228,36 @@ class RoomConsumer(JsonWebsocketConsumer):
             logging.error("Receive_json error ::: ")
             logging.error(e)
 
-    def article_request(self, event):
-        article_pk = event["input"]
-        if Article.objects.filter(pk=article_pk).exists():
-            article = serializers.serialize("json", [Article.objects.get(pk=article_pk)])
-        else:
-            article = "Article Not Found"
-        self.send(text_data=json.dumps({
-            'message': article
-        }))
+    def start_game(self, message):
+        #TODO check if user is host and check his game
+        #TODO send everyone article
+        #TODO get specific articles
+        # Anyone can start game model
+        async_to_sync(self.channel_layer.group_send)({
+            self.room_group_name,
+            {
+                "type": "article_request",
+                "message": json.dumps('{"message": 1}'),
+            }
+        })
+        # doesnt work
+        self.send_everyone(self.article_request(1))
+
+        #TODO start time and counter
+
+    def article_request(self, article_pk):
+        try:
+            if Article.objects.filter(pk=article_pk).exists():
+                article = serializers.serialize("json", [Article.objects.get(pk=article_pk)])
+            else:
+                article = "Article Not Found"
+            self.send(text_data=json.dumps({
+                'message': article
+            }))
+        except Exception as e:
+            self.send_json({"message": "beeeeeeeech you cant even send request properly like whaaAaaAAAaaAAttT"})
+            logging.error("article request ::: ")
+            logging.error(e)
 
     def update_score(self):
         user = self.scope['user']
@@ -223,6 +265,16 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def submit_final_score(self):
         user = self.scope['user']
+
+    def send_everyone(self, message):
+        async_to_sync(self.channel_layer.group_send)(
+            self.room_group_name,
+            {
+                "type": "send_json",
+                "message": message,
+            }
+        )
+
 
 # class GameConsumer(WebsocketConsumer):
 #

@@ -17,7 +17,7 @@ class Room(models.Model):
             logging.info("Room {} is empty. Deleting...".format(self.pk))
             self.delete()
         else:
-            logging.info("ROOM NOT DELETED LA SIAL")
+            logging.error("models delete_if_empty ::: ROOM NOT DELETED LA SIAL")
 
     def is_empty(self):
         return not self.players.exists()

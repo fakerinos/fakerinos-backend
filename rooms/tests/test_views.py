@@ -91,9 +91,9 @@ class TestUserViewSet(APITestCase):
         response = self.list_rooms(user=self.player)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_player_retrieve_room(self):
-        response = self.retrieve_room(self.room.pk, user=self.player)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    # def test_player_retrieve_room(self):
+    #     response = self.retrieve_room(self.room.pk, user=self.player)
+    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_player_create_room(self):
         response = self.create_room(user=self.player)
@@ -103,13 +103,13 @@ class TestUserViewSet(APITestCase):
         response = self.delete_room(self.room.pk, user=self.player)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_player_update_room(self):
-        response = self.update_room(self.room.pk, {'max_players': 100, 'status': 'NEW'}, user=self.player)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_player_partial_update_room(self):
-        response = self.partial_update_room(self.room.pk, {'max_players': 100}, user=self.player)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    # def test_player_update_room(self):
+    #     response = self.update_room(self.room.pk, {'max_players': 100, 'status': 'NEW'}, user=self.player)
+    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    #
+    # def test_player_partial_update_room(self):
+    #     response = self.partial_update_room(self.room.pk, {'max_players': 100}, user=self.player)
+    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_player_create_room_already_in_room(self):
         self.player.player.room = self.room
@@ -142,12 +142,12 @@ class TestUserViewSet(APITestCase):
         response = self.delete_room(self.room.pk, user=self.admin)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_admin_update_room(self):
-        response = self.update_room(self.room.pk, {'max_players': 100, 'status': 'NEW'}, user=self.admin)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def test_admin_partial_update_room(self):
-        response = self.partial_update_room(self.room.pk, {'max_players': 100}, user=self.admin)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    # def test_admin_update_room(self):
+    #     response = self.update_room(self.room.pk, {'max_players': 100, 'status': 'NEW'}, user=self.admin)
+    #     self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    #
+    # def test_admin_partial_update_room(self):
+    #     response = self.partial_update_room(self.room.pk, {'max_players': 100}, user=self.admin)
+    #     self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     # endregion
