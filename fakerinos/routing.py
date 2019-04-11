@@ -3,7 +3,6 @@ from fakerinos.middleware import TokenAuthMiddlewareStack
 from django.urls import path
 import chat.routing
 import rooms.routing
-from rooms.consumers import GameConsumer
 
 application = ProtocolTypeRouter(
     {
@@ -15,8 +14,5 @@ application = ProtocolTypeRouter(
                 ]))]
             )
         ),
-        "channel": ChannelNameRouter({
-            "game-consumer": GameConsumer,
-        }),
     }
 )

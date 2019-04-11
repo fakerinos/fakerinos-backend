@@ -62,16 +62,15 @@ class RoomConsumer(JsonWebsocketConsumer):
     def websocket_connect(self, message):
         logging.info(message)
         self.user = self.scope['user']
-        self.channel_name = self.user
-        # logging.info("trry")
         self.accept()
         # this is working
-        self.send(text_data=json.dumps({"message": "connected"}))
-        self.send_json({
-            "message": "hello again",
-        })
+        # self.send(text_data=json.dumps({"message": "connected"}))
+        # self.send_json({
+        #     "message": "hello again",
+        # })
         # self.<handler_name>(args)
         self.find_room(message=message)
+
 
     def find_room(self, message):
         logging.info(".. entering find_room handler ..")
@@ -84,6 +83,20 @@ class RoomConsumer(JsonWebsocketConsumer):
                     self.user.player.room = room
                     self.user.player.save()
                     #TODO add into group
+                    self.room_group_name = 'room_%s' % room.pk
+                    async_to_sync(self.channel_layer.group_add)(
+                        self.room_group_name,
+                        self.channel_name
+                    )
+                    logging.info("you here")
+                    # async_to_sync(self.channel_layer.group_send)(
+                    #     self.room_group_name,
+                    #     {
+                    #         "type": "send_json",
+                    #         "message": "please work",
+                    #     }
+                    # )
+
                 elif self.user.profile in room.players.all():
                     #TODO how to handle if user already in room --> will that happen lol
                     logging.info("Already in room bro")
@@ -100,11 +113,7 @@ class RoomConsumer(JsonWebsocketConsumer):
             logging.info("room doesnt exist")
             # create room
             self.create_room(message=message)
-            # room = Room.objects.create(subject="test")
-            # logging.info("User {} CREATED room {}".format(self.scope['user'].id, room.id))
-            # self.user.player.room = room
-            # self.user.player.save()
-
+            self.room_group_name = 'room_%s' % self.user.player.room.pk
 
     def create_room(self, message):
         logging.info(".. entering create room handler ..")
@@ -114,6 +123,17 @@ class RoomConsumer(JsonWebsocketConsumer):
         self.user.player.room = room
         self.user.player.save()
         #TODO create group
+        async_to_sync(self.channel_layer.group_add)(
+            self.room_group_name,
+            self.channel_name
+        )
+        # async_to_sync(self.channel_layer.group_send(
+        #     self.room_group_name,
+        #     {
+        #         "type": "send_json",
+        #         "message": "please work",
+        #     }
+        # ))
 
     # def websocket_connect(self, message):
     #     self.room_id = self.scope['url_route']['kwargs']['room_name']
@@ -204,22 +224,22 @@ class RoomConsumer(JsonWebsocketConsumer):
         user = self.scope['user']
 
 
-class GameConsumer(WebsocketConsumer):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        async_to_sync(self.channel_layer.group_add)(
-            "gameconsumer",
-            self.channel_name
-        )
-
-    def websocket_connect(self, message):
-        """self.game_group_name = 'game_%s'"""
-        self.accept()
-
-    def websocket_disconnect(self, message):
-        """
-        # async_to_sync(self.channel_layer.send(
-        #
-        # ))"""
+# class GameConsumer(WebsocketConsumer):
+#
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         async_to_sync(self.channel_layer.group_add)(
+#             "gameconsumer",
+#             self.channel_name
+#         )
+#
+#     def websocket_connect(self, message):
+#         """self.game_group_name = 'game_%s'"""
+#         self.accept()
+#
+#     def websocket_disconnect(self, message):
+#         """
+#         # async_to_sync(self.channel_layer.send(
+#         #
+#         # ))"""
 
