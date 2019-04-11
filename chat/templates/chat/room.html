@@ -17,7 +17,7 @@
 
     var chatSocket = new WebSocket(
         ws_scheme + '://' + window.location.host +
-        '/ws/chat/' + roomName + '/');
+        '/ws/rooms/' + roomName + '/1/');
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
