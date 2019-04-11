@@ -54,9 +54,6 @@ main send types:
 
 """
 
-def string_to_handler(self, handle):
-    return None
-
 class RoomConsumer(JsonWebsocketConsumer):
 
     def websocket_connect(self, message):
