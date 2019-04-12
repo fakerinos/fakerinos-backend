@@ -6,7 +6,6 @@ import logging
 from articles.models import Article
 import json
 import channels.layers
-import websockets
 from django.core import serializers
 
 """
