@@ -10,16 +10,16 @@ from ..serializers import RoomSerializer
 User = get_user_model()
 
 
-class TestUserViewSet(APITestCase):
+class TestSinglePlayer(APITestCase):
     def setUp(self):
         self.room = mixer.blend(Room)
         self.player = mixer.blend(User)
         self.admin = mixer.blend(User, is_superuser=True)
-        self.list_endpoint = reverse('rooms-list')
+        self.list_endpoint = reverse('single-player-list')
 
     # region helpers
     def get_detail_endpoint(self, pk):
-        return reverse('rooms-detail', kwargs={'pk': pk})
+        return reverse('single-player-detail', kwargs={'pk': pk})
 
     def list_rooms(self, user=None):
         if user:

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Profile, Player
+from articles.serializers import DeckSerializer
 from articles.models import Tag, Deck
 
 User = get_user_model()
@@ -17,15 +18,22 @@ class UserSerializer(serializers.ModelSerializer):
 class PlayerSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(read_only=True, slug_field='username')
     room = serializers.PrimaryKeyRelatedField(read_only=True, default=None)
-    hosted_room = serializers.PrimaryKeyRelatedField(read_only=True, default=None)
+    games = serializers.SerializerMethodField()
+
+    # hosted_room = serializers.PrimaryKeyRelatedField(read_only=True, default=None)
+
+    def get_games(self, obj):
+        games = obj.games.all()
+        return [{'deck': game.deck.pk, 'score': game.score, 'time': str(game.time)} for game in games]
 
     class Meta:
         model = Player
         fields = (
             'user',
             'room',
-            'hosted_room',
+            # 'hosted_room',
             'skill_rating',
+            'games'
         )
 
 

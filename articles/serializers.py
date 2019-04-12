@@ -46,7 +46,7 @@ class DeckSerializer(serializers.ModelSerializer):
         model = Deck
         fields = (
             'pk',
-            'subject',
+            'title',
             'articles',
             'tags',
             'description',

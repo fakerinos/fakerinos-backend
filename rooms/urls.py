@@ -3,9 +3,8 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
-router.register('', views.RoomViewSet, 'rooms')
+router.register('single-player', views.SinglePlayer, 'single-player')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('<next_article>', include(router.urls)),
 ]
