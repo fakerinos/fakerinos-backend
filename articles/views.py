@@ -1,5 +1,4 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
@@ -21,12 +20,11 @@ class DeckViewSet(ModelViewSet):
 
     @action(detail=False)
     def recommended(self, request):
-        decks = self.get_recommended_decks(request)
+        decks = self.get_recommended_decks(request.user)
         serializer = self.get_serializer(decks, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def get_recommended_decks(self, request):
-        user = request.user
+    def get_recommended_decks(self, user):
         tags = user.profile.interests.all()
         tagged_decks = Deck.objects.filter(tags__in=tags).distinct()[:10]
         return tagged_decks
@@ -46,6 +44,13 @@ class DeckViewSet(ModelViewSet):
         profile.starred_decks.add(deck)
         profile.save()
         return Response(status.HTTP_200_OK)
+
+    @action(detail=True)
+    def articles(self, request, *args, **kwargs):
+        deck = self.get_object()
+        articles = deck.articles.all()
+        serializer = ArticleSerializer(articles, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TagViewSet(ModelViewSet):

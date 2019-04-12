@@ -11,13 +11,14 @@
     <input id="chat-message-submit" type="button" value="Send"/>
 </body>
 <script>
-    var roomName = {{ room_name_json }};
+    var subject = {{ subject_json }};
 
     var ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
 
     var chatSocket = new WebSocket(
         ws_scheme + '://' + window.location.host +
-        '/ws/chat/' + roomName + '/');
+        '/ws/rooms/' + subject + '/');
+
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
