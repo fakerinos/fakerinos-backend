@@ -6,7 +6,6 @@ import logging
 from articles.models import Article
 import json
 import channels.layers
-import websockets
 from django.core import serializers
 
 """
@@ -59,8 +58,8 @@ main send types:
 
 """
 
-class RoomConsumer(JsonWebsocketConsumer):
 
+class RoomConsumer(JsonWebsocketConsumer):
     def websocket_connect(self, message):
         logging.info(message)
         self.user = self.scope['user']
@@ -74,18 +73,18 @@ class RoomConsumer(JsonWebsocketConsumer):
         self.find_room(message=message)
 
     def find_room(self, message):
-        #TODO deck needs to be initialized YOOOO
+        # TODO deck needs to be initialized YOOOO
         logging.info(".. entering find_room handler ..")
         logging.info("i need to know the type " + str(type(self.scope['url_route']['kwargs']['subject'])))
         subject = self.scope['url_route']['kwargs']['subject']
         room_pk = None
-        #TODO am i searching for subject
+        # TODO am i searching for subject
         try:
             room_pk = self.scope['url_route']['kwargs']['room_pk']
         except Exception as e:
             logging.info("find room :: No room name found")
             logging.info(e)
-        if room_pk != None:
+        if room_pk is not None:
             self.join_room(Room.objects.get(pk=room_pk))
             pass
 
@@ -105,7 +104,6 @@ class RoomConsumer(JsonWebsocketConsumer):
             logging.info("room doesnt exist")
             # create room
             self.create_room(subject)
-
 
     def create_room(self, subject):
         logging.info(".. entering create room handler ..")
@@ -130,7 +128,8 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def join_room(self, room_object):
         room = room_object
-        if self.user.is_authenticated and self.user.profile not in room.players.all() and len(room.players.all()) < room.max_players:
+        if self.user.is_authenticated and self.user.profile not in room.players.all() and len(
+                room.players.all()) < room.max_players:
             logging.info("User {} joined room {}".format(self.scope['user'].id, room.id))
             self.user.player.room = room
             self.user.player.save()
@@ -153,7 +152,6 @@ class RoomConsumer(JsonWebsocketConsumer):
             # TODO how to handle if user already in room --> will that happen lol
             logging.info("Already in room bro")
             return None
-
 
     # def websocket_connect(self, message):
     #     self.room_id = self.scope['url_route']['kwargs']['room_name']
@@ -194,7 +192,7 @@ class RoomConsumer(JsonWebsocketConsumer):
         room = user.player.room
         logging.info("deleting room from player and room itself")
         try:
-            #TODO what if room is still exists because plaayer disconnects wrongly
+            # TODO what if room is still exists because plaayer disconnects wrongly
             if user.is_authenticated:
                 # logging.info("how many people in room :: " + str(len(room.players.all())))
                 user.player.room = None
@@ -231,9 +229,9 @@ class RoomConsumer(JsonWebsocketConsumer):
             logging.error(e)
 
     def start_game(self, message):
-        #TODO check if user is host and check his game
-        #TODO send everyone article
-        #TODO get specific articles
+        # TODO check if user is host and check his game
+        # TODO send everyone article
+        # TODO get specific articles
         # Anyone can start game model
         async_to_sync(self.channel_layer.group_send)({
             self.room_group_name,
@@ -245,7 +243,7 @@ class RoomConsumer(JsonWebsocketConsumer):
         # doesnt work
         self.send_everyone(self.article_request(1))
 
-        #TODO start time and counter
+        # TODO start time and counter
 
     def article_request(self, article_pk):
         try:
@@ -277,7 +275,6 @@ class RoomConsumer(JsonWebsocketConsumer):
             }
         )
 
-
 # class GameConsumer(WebsocketConsumer):
 #
 #     def __init__(self, *args, **kwargs):
@@ -296,4 +293,3 @@ class RoomConsumer(JsonWebsocketConsumer):
 #         # async_to_sync(self.channel_layer.send(
 #         #
 #         # ))"""
-

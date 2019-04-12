@@ -41,7 +41,10 @@ class DeckViewSet(ModelViewSet):
     def star(self, request, *args, **kwargs):
         deck = self.get_object()
         profile = request.user.profile
-        profile.starred_decks.add(deck)
+        if deck in profile.starred_decks.all():
+            profile.starred_decks.remove(deck)
+        else:
+            profile.starred_decks.add(deck)
         profile.save()
         return Response(status.HTTP_200_OK)
 

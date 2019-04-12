@@ -4,7 +4,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from datetime import datetime
 from guardian.mixins import GuardianUserMixin
 from django.conf import settings
-from rooms.models import Room
 from articles.models import Tag, Deck
 
 
@@ -14,8 +13,10 @@ class User(GuardianUserMixin, AbstractUser):
 
 class Player(models.Model):
     user = models.OneToOneField(User, primary_key=True, editable=False, on_delete=models.CASCADE)
-    room = models.ForeignKey(Room, on_delete=models.PROTECT, related_name='players', editable=False, null=True)
-    hosted_room = models.OneToOneField(Room, on_delete=models.SET_NULL, related_name='host', editable=False, null=True)
+    room = models.ForeignKey('rooms.Room', on_delete=models.PROTECT, related_name='players', editable=False, null=True,
+                             blank=True)
+    hosted_room = models.OneToOneField('rooms.Room', on_delete=models.SET_NULL, related_name='host', editable=False,
+                                       null=True)
     skill_rating = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(1000)],
                                        editable=False,
                                        default=500)
