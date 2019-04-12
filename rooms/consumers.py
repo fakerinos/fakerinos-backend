@@ -44,9 +44,11 @@ main receive types:
         ii. indicate_ready
         .. update all room's waiting lists ..
 
-        iii. next_article
+        iii. next_article && submit score
         #TODO who gets article (?) client || server
-
+        
+        iv. submit score
+        
     C. message_print
         takes a message and sends to client to print
 

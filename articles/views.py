@@ -6,6 +6,8 @@ from rest_framework.decorators import action
 from .models import Article, Deck, Tag
 from .serializers import ArticleSerializer, DeckSerializer, TagSerializer
 from rest_framework import permissions
+from django.core import serializers
+import json
 
 
 class ArticleViewSet(ModelViewSet):
@@ -46,6 +48,25 @@ class DeckViewSet(ModelViewSet):
         profile.starred_decks.add(deck)
         profile.save()
         return Response(status.HTTP_200_OK)
+
+    @action(detail=True)
+    def list_all_articles(self, request, pk):
+        # pk in string
+        data = []
+        list = Deck.objects.get(pk=pk).articles.values_list('pk', flat=True)
+        for i in list:
+            data.append(i)
+        return Response(json.dumps({"list_of_article_pk":data}), status=status.HTTP_200_OK)
+
+    @action(detail=True)
+    def all_articles(self, request, pk):
+        # pk in string
+        data = []
+        list = Deck.objects.get(pk=pk).articles.all()
+        # for i in list:
+        #     data.append(ArticleSerializer(i))
+        serializer = ArticleSerializer(list, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TagViewSet(ModelViewSet):
