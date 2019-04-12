@@ -1,13 +1,10 @@
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from .models import Article, Deck, Tag
 from .serializers import ArticleSerializer, DeckSerializer, TagSerializer
 from rest_framework import permissions
-from django.core import serializers
-import json
 
 
 class ArticleViewSet(ModelViewSet):
@@ -23,12 +20,11 @@ class DeckViewSet(ModelViewSet):
 
     @action(detail=False)
     def recommended(self, request):
-        decks = self.get_recommended_decks(request)
+        decks = self.get_recommended_decks(request.user)
         serializer = self.get_serializer(decks, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def get_recommended_decks(self, request):
-        user = request.user
+    def get_recommended_decks(self, user):
         tags = user.profile.interests.all()
         tagged_decks = Deck.objects.filter(tags__in=tags).distinct()[:10]
         return tagged_decks
@@ -50,22 +46,10 @@ class DeckViewSet(ModelViewSet):
         return Response(status.HTTP_200_OK)
 
     @action(detail=True)
-    def list_all_articles(self, request, pk):
-        # pk in string
-        data = []
-        list = Deck.objects.get(pk=pk).articles.values_list('pk', flat=True)
-        for i in list:
-            data.append(i)
-        return Response(json.dumps({"list_of_article_pk":data}), status=status.HTTP_200_OK)
-
-    @action(detail=True)
-    def all_articles(self, request, pk):
-        # pk in string
-        data = []
-        list = Deck.objects.get(pk=pk).articles.all()
-        # for i in list:
-        #     data.append(ArticleSerializer(i))
-        serializer = ArticleSerializer(list, many=True)
+    def articles(self, request, *args, **kwargs):
+        deck = self.get_object()
+        articles = deck.articles.all()
+        serializer = ArticleSerializer(articles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
