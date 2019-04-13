@@ -3,6 +3,7 @@ import logging
 
 
 class Room(models.Model):
+    #TODO should change subject to deck
     max_players = models.IntegerField(default=2, editable=False)
     status = models.CharField(max_length=128, default='NEW', editable=False)
     subject = models.CharField(max_length=50, null=True)

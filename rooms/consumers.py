@@ -9,6 +9,7 @@ import channels.layers
 import websockets
 from django.core import serializers
 import sys
+import random
 
 """
 ### TODOs
@@ -73,13 +74,13 @@ class RoomConsumer(JsonWebsocketConsumer):
             logging.exception(message)
             self.send_json({
                 "action": "admin",
-                "data": message,
+                "message": message,
             })
             self.close()
         self.accept()
         self.send_json({
             "action": "admin",
-            "data": "connection success"
+            "message": "connection success"
         })
         self.find_room(message=message)
 
@@ -87,15 +88,18 @@ class RoomConsumer(JsonWebsocketConsumer):
         #TODO deck needs to be initialized YOOOO
         logging.info(".. entering find_room handler ..")
         # url args are given as str
-        room_pk = None
-        subject = None
+        self.room_pk = None
+        self.deck_pk = None
         try:
-            room_pk = self.scope['url_route']['kwargs']['room_pk']
-            subject = self.scope['url_route']['kwargs']['subject']
+            self.deck_pk = self.scope['url_route']['kwargs']['deck_pk']
+            self.room_pk = self.scope['url_route']['kwargs']['room_pk']
         except Exception as e:
             logging.exception("find room :: No room name found OR no subject found")
             logging.exception(e)
 
+        if self.deck_pk is None:
+            number_of_decks = len(Deck.objects.all())
+            self.deck_pk = random.randint(1,number_of_decks)
         #TODO am i searching for subject
 
         """
@@ -133,13 +137,17 @@ class RoomConsumer(JsonWebsocketConsumer):
     def create_room(self, subject):
         logging.info(".. entering create room handler ..")
         # TODO create room with subject and add host
-        if subject!=None:
+        # TODO assign deck
+        if subject is not None:
             room = Room.objects.create(subject=subject)
         else:
             room = Room.objects.create(subject=None)
         logging.info("User {} CREATED room {}".format(self.scope['user'].id, room.id))
         self.user.player.room = room
+        self.user.player.hosted_room = room
         self.user.player.save()
+        room.deck = self.deck_pk
+        room.save()
         self.room_group_name = 'room_%s' % self.user.player.room.pk
         # TODO create group
         async_to_sync(self.channel_layer.group_add)(
@@ -163,11 +171,13 @@ class RoomConsumer(JsonWebsocketConsumer):
             )
             logging.info("joined room")
             self.send_everyone({"action":"admin", "data": "joined room"})
+            # check if game is ready
+            if (len(room.players.all()) == room.max_players):
+                self.start_game()
 
         elif self.user.profile in room.players.all():
             # TODO how to handle if user already in room --> will that happen lol
             logging.info("Already in room bro")
-            return None
 
         elif len(room.players.all()) == room.max_players:
             logging.info("room full ==> try again")
@@ -206,15 +216,15 @@ class RoomConsumer(JsonWebsocketConsumer):
             logging.exception(e)
 
     def receive_json(self, content, **kwargs):
-        logging.info("######################### receiving data from client ##########################")
+        logging.info("######################### receiving message from client ##########################")
         self.send_json({
             "action": "admin",
-            "data": "server received your message"
+            "message": "server received your message"
         })
         # TODO handle bad input types
         # MUST BE double quotes !!! ""
-        logging.debug("look out for incoming data structure")
-        logging.debug("incoming data: " + str(content) + "\ndata type is: " + str(type(content)))
+        logging.debug("look out for incoming message structure")
+        logging.debug("incoming message: " + str(content) + "\nmessage type is: " + str(type(content)))
 
         # handle both string and dict type
         if type(content) is str:
@@ -230,8 +240,8 @@ class RoomConsumer(JsonWebsocketConsumer):
         elif type(content) is dict:
             try:
                 get_action = content["action"]
-                get_data = content["data"]
-                getattr(self, get_action)(get_data)
+                get_message = content["message"]
+                getattr(self, get_action)(get_message)
             except Exception as e:
                 logging.exception(e)
         else:
@@ -286,7 +296,7 @@ class RoomConsumer(JsonWebsocketConsumer):
             {
                 "type": "send_json",
                 "action": nested_data["action"],
-                "data": nested_data["data"],
+                "message": nested_data["message"],
             }
         )
 
