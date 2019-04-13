@@ -3,9 +3,9 @@ import logging
 
 
 class Room(models.Model):
-    max_players = models.IntegerField(default=4, editable=False)
+    max_players = models.IntegerField(default=2, editable=False)
     status = models.CharField(max_length=128, default='NEW', editable=False)
-    subject = models.CharField(max_length=50, unique=True, null=True)
+    subject = models.CharField(max_length=50, null=True)
 
     # has a players relation in the User model
     # has a host relation in the User model
