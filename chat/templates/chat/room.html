@@ -1,3 +1,4 @@
+Krishna, [14.04.19 01:43]
 <!-- chat/templates/chat/room.html -->
 <!DOCTYPE html>
 <html   >
@@ -11,14 +12,13 @@
     <input id="chat-message-submit" type="button" value="Send"/>
 </body>
 <script>
-    var subject = {{ subject_json }};
+    var roomName = {{ room_name_json }};
 
     var ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
 
     var chatSocket = new WebSocket(
         ws_scheme + '://' + window.location.host +
-        '/ws/rooms/' + subject + '/');
-
+        '/ws/chat/' + roomName + '/');
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
@@ -41,7 +41,7 @@
         var messageInputDom = document.querySelector('#chat-message-input');
         var message = messageInputDom.value;
         chatSocket.send(JSON.stringify({
-            "action" : message
+            'message': message
         }));
 
         messageInputDom.value = '';

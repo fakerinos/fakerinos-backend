@@ -2,7 +2,7 @@ from django.db import models
 from django.dispatch import receiver
 from . import signals
 import logging
-
+from accounts.models import Player
 
 class Room(models.Model):
     max_players = models.IntegerField(default=2, editable=False)
@@ -19,9 +19,15 @@ class Room(models.Model):
             self.delete()
         else:
             logging.error("models delete_if_empty ::: ROOM NOT EMPTY LA SIAL")
+            logging.error("players still in the room: " + str(self.players.all()))
 
     def is_empty(self):
         return not self.players.exists()
+
+    def force_delete(self):
+        if len(self.players.all()) == 1:
+            self.players.set(Player.objects.filter(pk=0))
+            self.delete_if_empty()
 
 
 class GameResult(models.Model):
