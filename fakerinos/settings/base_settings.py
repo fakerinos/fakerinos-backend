@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     # Apps
     'fakerinos',
     'chat',
+    'leaderboard',
     'accounts',
     'articles',
     'rooms',

@@ -7,7 +7,6 @@ import logging
 class RoomSerializer(serializers.ModelSerializer):
     players = serializers.SerializerMethodField()
     deck = serializers.PrimaryKeyRelatedField(queryset=Deck.objects.all())
-    tag = serializers.PrimaryKeyRelatedField(read_only=True)
 
     def get_players(self, obj):
         return [player.user.username for player in obj.players.all()]
@@ -21,14 +20,12 @@ class RoomSerializer(serializers.ModelSerializer):
             'players',
             'subject',
             'deck',
-            'tag',
         )
         read_only_fields = (
             'max_players',
             'status',
             'players',
             'subject',
-            'tag',
         )
 
 
@@ -43,19 +40,17 @@ class FinishSerializer(serializers.Serializer):
 
 
 class GameResultSerializer(serializers.ModelSerializer):
-    player = serializers.RelatedField(read_only=True, source='user.username')
+    username = serializers.SerializerMethodField()
     deck = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    def get_username(self, obj):
+        return obj.player.user.username
 
     class Meta:
         model = GameResult
         fields = (
             'deck',
-            'player',
+            'username',
             'score',
             'time'
-        )
-        read_only_fields = (
-            'score',
-            'deck',
-            'player',
         )

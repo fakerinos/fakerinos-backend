@@ -7,11 +7,11 @@ from .serializers import RoomSerializer, FinishSerializer, GameResultSerializer
 from .models import Room, GameResult
 from . import exceptions
 from . import signals
+from accounts.models import Player
 from articles.models import Article, Deck
 from articles.serializers import DeckSerializer
-import logging
-import json
 import uuid
+import random
 
 
 class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
@@ -96,3 +96,14 @@ class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
         player.room = None
         player.save()
         return Response(status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=False)
+    def fake_result(self, request, *args, **kwargs):
+        player = Player.objects.order_by('?').first()
+        score = random.randint(-200, 2000)
+        deck = Deck.objects.order_by('?').first()
+        room = Room.objects.create(deck=deck, max_players=1)
+        game_uid = uuid.uuid4()
+        signals.game_ended.send(self.__class__, room=room, deck=deck, game_uid=game_uid, scores=[(player, score)])
+        room.delete()
+        return Response(status=status.HTTP_201_CREATED)

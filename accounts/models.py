@@ -13,11 +13,14 @@ class User(GuardianUserMixin, AbstractUser):
 
 class Player(models.Model):
     user = models.OneToOneField(User, primary_key=True, editable=False, on_delete=models.CASCADE)
-    room = models.ForeignKey('rooms.Room', on_delete=models.SET_NULL, related_name='players', editable=False, null=True,
-                             blank=True)
+    room = models.ForeignKey('rooms.Room', on_delete=models.SET_NULL, related_name='players', editable=False, null=True)
     skill_rating = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(1000)],
                                        editable=False,
                                        default=500)
+    rank = models.PositiveIntegerField(null=True, editable=False)
+    score = models.PositiveIntegerField(default=0, editable=False)
+    finished_decks = models.ManyToManyField(Deck, related_name='finishers', editable=False, blank=True)
+    starred_decks = models.ManyToManyField(Deck, related_name='starrers', blank=True)
 
 
 class Profile(models.Model):
@@ -28,9 +31,7 @@ class Profile(models.Model):
     name = models.CharField(max_length=255, blank=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     interests = models.ManyToManyField(Tag, related_name='interested_users', blank=True)
-    starred_decks = models.ManyToManyField(Deck, related_name='starrers', blank=True)
     onboarded = models.BooleanField(default=False, blank=True)
-    finished_decks = models.ManyToManyField(Deck, related_name='finishers', blank=True)
 
     @property
     def is_complete(self):
