@@ -20,8 +20,6 @@ class PlayerSerializer(serializers.ModelSerializer):
     room = serializers.PrimaryKeyRelatedField(read_only=True, default=None)
     games = serializers.SerializerMethodField()
 
-    # hosted_room = serializers.PrimaryKeyRelatedField(read_only=True, default=None)
-
     def get_games(self, obj):
         games = obj.games.all()
         return [{'deck': game.deck.pk, 'score': game.score, 'time': str(game.time)} for game in games]
@@ -31,7 +29,6 @@ class PlayerSerializer(serializers.ModelSerializer):
         fields = (
             'user',
             'room',
-            # 'hosted_room',
             'skill_rating',
             'games'
         )

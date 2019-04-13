@@ -1,4 +1,6 @@
 from django.db import models
+from django.dispatch import receiver
+from . import signals
 import logging
 
 
@@ -23,7 +25,12 @@ class Room(models.Model):
 
 
 class GameResult(models.Model):
+    game_uid = models.UUIDField(null=True)  # must be provided at creation time
     time = models.DateTimeField(auto_now_add=True, blank=True, null=True, editable=False)
     player = models.ForeignKey('accounts.Player', related_name='games', editable=False, on_delete=models.CASCADE)
     deck = models.ForeignKey('articles.Deck', on_delete=models.SET_NULL, editable=False, null=True)
     score = models.IntegerField(editable=False)
+
+    @property
+    def all_player_results(self):
+        return GameResult.objects.filter(game_uid=self.game_uid)

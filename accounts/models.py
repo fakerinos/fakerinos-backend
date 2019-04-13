@@ -15,8 +15,6 @@ class Player(models.Model):
     user = models.OneToOneField(User, primary_key=True, editable=False, on_delete=models.CASCADE)
     room = models.ForeignKey('rooms.Room', on_delete=models.SET_NULL, related_name='players', editable=False, null=True,
                              blank=True)
-    # hosted_room = models.OneToOneField('rooms.Room', on_delete=models.SET_NULL, related_name='host', editable=False,
-    #                                    null=True)
     skill_rating = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(1000)],
                                        editable=False,
                                        default=500)

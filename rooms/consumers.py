@@ -14,7 +14,6 @@ from django.core import serializers
     -- self.scope['url_route']['kwargs'][<url_part_name_self_defined_yeah>]
 2. what is in websocket_connect(self,message) ==> WHATS IN MESSAGE
 3. ARE WE USING ASYNC TO SYNC
-4. ROOM must have host
 5. WHY DOESNT room 1 WORK ??????
 6. SERIOUSLY HOW TO DELETE ROOMS LA
 ###
@@ -107,7 +106,7 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def create_room(self, subject):
         logging.info(".. entering create room handler ..")
-        # TODO create room with subject and add host
+        # TODO create room with subject
         room = Room.objects.create(subject=subject)
         logging.info("User {} CREATED room {}".format(self.scope['user'].id, room.id))
         self.room_group_name = 'room_%s' % self.user.player.room.pk
@@ -199,9 +198,6 @@ class RoomConsumer(JsonWebsocketConsumer):
                 user.save()
                 # logging.info("just for good measure")
                 # logging.info(user.player.room)
-                # logging.info(user.player.hosted_room)
-                # if user.player.hosted_room.pk == room.pk:
-                #     logging.info('yes same')
                 # logging.info("so you left ?")
                 logging.info("REALLY ??? :: " + str(len(room.players.all())))
                 logging.info("User {} left room {}".format(user.pk, room.pk))
@@ -229,7 +225,6 @@ class RoomConsumer(JsonWebsocketConsumer):
             logging.error(e)
 
     def start_game(self, message):
-        # TODO check if user is host and check his game
         # TODO send everyone article
         # TODO get specific articles
         # Anyone can start game model

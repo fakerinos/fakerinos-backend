@@ -6,10 +6,12 @@ from rest_framework import status
 from .serializers import RoomSerializer, FinishSerializer, GameResultSerializer
 from .models import Room, GameResult
 from . import exceptions
+from . import signals
 from articles.models import Article, Deck
 from articles.serializers import DeckSerializer
 import logging
 import json
+import uuid
 
 
 class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
@@ -45,19 +47,22 @@ class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
             player_room.delete_if_empty()
         player.save()
 
-        # Create the room and add the player to it
+        # Create single player room, set the deck, send the `game_started` signal
         room = room_serializer.save()
-        player.room = room
-        player.save()
-
-        # Initializer room's deck and max_players
         room.max_players = 1
         room.deck = deck
         room.save()
+        signals.game_started.send(self.__class__, deck=deck, room=room)
+
+        # Add player to room, send `player_joined_room` signal
+        player.room = room
+        player.save()
+        signals.player_joined_room.send(self.__class__, room=room, player=player)
 
         # Return deck information
         deck_serializer = DeckSerializer(deck)
-        return Response(deck_serializer.data, status=status.HTTP_200_OK)
+
+        return Response(deck_serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['post'])
     def finish(self, request):
@@ -75,18 +80,13 @@ class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
             raise exceptions.NotInRoomException()
         deck = room.deck
         score = request_data['score']
-        game_result = GameResult.objects.create(score=score, player=player, deck=deck)
-        game_result_serializer = GameResultSerializer(game_result)
-        data = game_result_serializer.data
-        if len(room.players.all()) == 1:
-            room.delete()
-        player.room = None
-        player.save()
-        return Response(data, status=status.HTTP_200_OK)
+        game_uid = uuid.uuid4()
+        scores = [(player, score)]
+        signals.game_ended.send(self.__class__, room=room, deck=deck, game_uid=game_uid, scores=scores)
+        return Response(status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
     def leave(self, request, *args, **kwargs):
-        # TODO: Force leave whatever room the requesting player is in.
         player = request.user.player
         room = player.room
         if room is None:

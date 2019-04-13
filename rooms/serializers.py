@@ -19,7 +19,6 @@ class RoomSerializer(serializers.ModelSerializer):
             'max_players',
             'status',
             'players',
-            # 'host',
             'subject',
             'deck',
             'tag',
@@ -28,7 +27,6 @@ class RoomSerializer(serializers.ModelSerializer):
             'max_players',
             'status',
             'players',
-            # 'host',
             'subject',
             'tag',
         )

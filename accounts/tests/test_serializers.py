@@ -78,7 +78,7 @@ class TestPlayerSerializer(APITestCase):
         self.model = Player
         self.serializer_class = PlayerSerializer
         self.user = mixer.blend(User)
-        self.expected_fields = ['user', 'room', 'skill_rating']
+        self.expected_fields = ['user', 'room', 'skill_rating', 'games']
 
     def test_expected_fields(self):
         instance = self.user.player
@@ -88,5 +88,5 @@ class TestPlayerSerializer(APITestCase):
     def test_expected_values(self):
         instance = self.user.player
         serializer = self.serializer_class(instance)
-        expected_values = {'user': instance.user.username, 'room': None, 'skill_rating': 500}
+        expected_values = {'user': instance.user.username, 'room': None, 'skill_rating': 500, 'games': []}
         self.assertEqual(expected_values, serializer.data)
