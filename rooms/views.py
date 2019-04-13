@@ -3,67 +3,96 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import permissions
 from rest_framework import status
-from .serializers import RoomSerializer
-from .models import Room
-from .exceptions import AlreadyInRoomException
-import logging
+from .serializers import RoomSerializer, FinishSerializer, GameResultSerializer
+from .models import Room, GameResult
+from . import exceptions
+from . import signals
 from articles.models import Article, Deck
+from articles.serializers import DeckSerializer
+import logging
 import json
-from django.core import serializers
+import uuid
 
 
-class RoomViewSet(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
+class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
+    """
+    A ViewSet to handle the basic single-player game mode.
+    Create a room by providing a deck ID.
+    Finish the game by POSTing to `end-game` with the final score.
+    """
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
     permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
     http_method_names = ['get', 'post', 'head', 'options']
 
     def create(self, request, *args, **kwargs):
+        room_serializer = self.get_serializer(data=request.data)
+
+        # Reject request if deck cannot be found (or on other serializer errors)
+        room_serializer.is_valid(raise_exception=True)
+        data = room_serializer.validated_data
+        deck = data['deck']
+
         # Reject request if user is currently in a room
         player = request.user.player
-        logging.error(str(player.user))
-        logging.error(str(player.room))
         if player.room:
-            raise AlreadyInRoomException(
+            raise exceptions.AlreadyInRoomException(
                 'Cannot create room because you are already in room {}.'.format(player.room.id)
             )
-        # Delete currently hosted room if empty (can happen if the user never joins a room they created)
-        hosted_room = player.hosted_room
-        if hosted_room is not None:
-            hosted_room.delete_if_empty()
 
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        room = serializer.save()
-        player.hosted_room = room
+        # If player is already in a room, remove them from it
+        player_room = player.room
+        player.room = None
+        if player_room:
+            player_room.delete_if_empty()
         player.save()
-        logging.error(request.data)
 
-        data = []
-        if "subject" in request.data and Deck.objects.filter(subject=request.data["subject"]).exists():
-            deck_subject = request.data["subject"]
-            deck_id = Deck.objects.get(subject=deck_subject).pk
-            article_list = Deck.objects.get(pk=deck_id).articles.values_list('pk', flat=True)
-            for id in article_list:
-                data.append(id)
-            return_value = json.dumps({'article_list': data, 'room': room.id})
-            return Response(return_value, status=status.HTTP_201_CREATED)
-        else:
-            logging.error("deck dont exists")
-            return Response(data,status=status.HTTP_404_NOT_FOUND)
+        # Create single player room, set the deck, send the `game_started` signal
+        room = room_serializer.save()
+        room.max_players = 1
+        room.deck = deck
+        room.save()
+        signals.game_started.send(self.__class__, deck=deck, room=room)
 
-    #detail=True means for single object =False means for entire collection
+        # Add player to room, send `player_joined_room` signal
+        player.room = room
+        player.save()
+        signals.player_joined_room.send(self.__class__, room=room, player=player)
+
+        # Return deck information
+        deck_serializer = DeckSerializer(deck)
+
+        return Response(deck_serializer.data, status=status.HTTP_201_CREATED)
+
     @action(detail=False, methods=['post'])
-    def end(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        #TODO get room from pk in endpoint and close room
-        logging.info(request.data["pk"])
-        room = self.get_object()
-        logging.info(room)
-        room.delete(self)
-        request.user.player.hosted_room = None
+    def finish(self, request):
+        """
+        Finish the game and delete the room if it's empty. Use only for single player.
+        Send a `score` parameter.
+        """
+        finish_serializer = FinishSerializer(data=request.data)
+        finish_serializer.is_valid(raise_exception=True)
+        request_data = finish_serializer.data
+        user = request.user
+        player = user.player
+        room = player.room
+        if room is None:
+            raise exceptions.NotInRoomException()
+        deck = room.deck
+        score = request_data['score']
+        game_uid = uuid.uuid4()
+        scores = [(player, score)]
+        signals.game_ended.send(self.__class__, room=room, deck=deck, game_uid=game_uid, scores=scores)
+        return Response(status=status.HTTP_200_OK)
 
-
-
-
+    @action(detail=False, methods=['post'])
+    def leave(self, request, *args, **kwargs):
+        player = request.user.player
+        room = player.room
+        if room is None:
+            raise exceptions.NotInRoomException()
+        if len(room.players.all()) == 1:
+            room.delete()
+        player.room = None
+        player.save()
+        return Response(status=status.HTTP_200_OK)

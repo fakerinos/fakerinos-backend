@@ -4,22 +4,23 @@ from rest_framework.test import APITestCase
 from rest_framework.reverse import reverse
 from rest_framework import status
 from mixer.backend.django import mixer
+from articles.models import Deck
 from ..models import Room
 from ..serializers import RoomSerializer
 
 User = get_user_model()
 
 
-class TestUserViewSet(APITestCase):
+class TestSinglePlayer(APITestCase):
     def setUp(self):
         self.room = mixer.blend(Room)
         self.player = mixer.blend(User)
         self.admin = mixer.blend(User, is_superuser=True)
-        self.list_endpoint = reverse('rooms-list')
+        self.list_endpoint = reverse('single-player-list')
 
     # region helpers
     def get_detail_endpoint(self, pk):
-        return reverse('rooms-detail', kwargs={'pk': pk})
+        return reverse('single-player-detail', kwargs={'pk': pk})
 
     def list_rooms(self, user=None):
         if user:
@@ -36,7 +37,8 @@ class TestUserViewSet(APITestCase):
     def create_room(self, user=None):
         if user:
             self.client.force_login(user)
-        response = self.client.post(self.list_endpoint, data={})
+        deck = mixer.blend(Deck)
+        response = self.client.post(self.list_endpoint, data={'deck': deck.pk})
         return response
 
     def update_room(self, pk, data, user=None):
@@ -117,12 +119,6 @@ class TestUserViewSet(APITestCase):
         response = self.create_room(user=self.player)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_player_create_room_already_hosting_room(self):
-        self.player.player.hosted_room = self.room
-        self.player.player.save()
-        response = self.create_room(user=self.player)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
     # endregion
 
     # region admin
@@ -142,12 +138,12 @@ class TestUserViewSet(APITestCase):
         response = self.delete_room(self.room.pk, user=self.admin)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    # def test_admin_update_room(self):
-    #     response = self.update_room(self.room.pk, {'max_players': 100, 'status': 'NEW'}, user=self.admin)
-    #     self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-    #
-    # def test_admin_partial_update_room(self):
-    #     response = self.partial_update_room(self.room.pk, {'max_players': 100}, user=self.admin)
-    #     self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+    def test_admin_update_room(self):
+        response = self.update_room(self.room.pk, {'max_players': 100, 'status': 'NEW'}, user=self.admin)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_admin_partial_update_room(self):
+        response = self.partial_update_room(self.room.pk, {'max_players': 100}, user=self.admin)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     # endregion
