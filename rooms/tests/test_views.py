@@ -4,22 +4,23 @@ from rest_framework.test import APITestCase
 from rest_framework.reverse import reverse
 from rest_framework import status
 from mixer.backend.django import mixer
+from articles.models import Deck
 from ..models import Room
 from ..serializers import RoomSerializer
 
 User = get_user_model()
 
 
-class TestUserViewSet(APITestCase):
+class TestSinglePlayer(APITestCase):
     def setUp(self):
         self.room = mixer.blend(Room)
         self.player = mixer.blend(User)
         self.admin = mixer.blend(User, is_superuser=True)
-        self.list_endpoint = reverse('rooms-list')
+        self.list_endpoint = reverse('single-player-list')
 
     # region helpers
     def get_detail_endpoint(self, pk):
-        return reverse('rooms-detail', kwargs={'pk': pk})
+        return reverse('single-player-detail', kwargs={'pk': pk})
 
     def list_rooms(self, user=None):
         if user:
@@ -36,7 +37,8 @@ class TestUserViewSet(APITestCase):
     def create_room(self, user=None):
         if user:
             self.client.force_login(user)
-        response = self.client.post(self.list_endpoint, data={})
+        deck = mixer.blend(Deck)
+        response = self.client.post(self.list_endpoint, data={'deck': deck.pk})
         return response
 
     def update_room(self, pk, data, user=None):
@@ -95,9 +97,9 @@ class TestUserViewSet(APITestCase):
         response = self.retrieve_room(self.room.pk, user=self.player)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # def test_player_create_room(self):
-    #     response = self.create_room(user=self.player)
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def test_player_create_room(self):
+        response = self.create_room(user=self.player)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_player_delete_room(self):
         response = self.delete_room(self.room.pk, user=self.player)
@@ -117,11 +119,11 @@ class TestUserViewSet(APITestCase):
         response = self.create_room(user=self.player)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # def test_player_create_room_already_hosting_room(self):
-    #     self.player.player.hosted_room = self.room
-    #     self.player.player.save()
-    #     response = self.create_room(user=self.player)
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def test_player_create_room_already_hosting_room(self):
+        self.player.player.hosted_room = self.room
+        self.player.player.save()
+        response = self.create_room(user=self.player)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     # endregion
 
@@ -134,9 +136,9 @@ class TestUserViewSet(APITestCase):
         response = self.retrieve_room(self.room.pk, user=self.admin)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # def test_admin_create_room(self):
-    #     response = self.create_room(user=self.admin)
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def test_admin_create_room(self):
+        response = self.create_room(user=self.admin)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_admin_delete_room(self):
         response = self.delete_room(self.room.pk, user=self.admin)

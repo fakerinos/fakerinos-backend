@@ -20,7 +20,7 @@ class Article(models.Model):
 
 
 class Deck(models.Model):
-    subject = models.CharField(max_length=50, unique=True)
+    title = models.CharField(max_length=100, unique=True)
     articles = models.ManyToManyField(Article, related_name='decks')
     description = models.CharField(max_length=200, blank=True)
     thumbnail_url = models.URLField(max_length=500, blank=True)
