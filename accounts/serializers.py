@@ -18,11 +18,8 @@ class UserSerializer(serializers.ModelSerializer):
 class PlayerSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(read_only=True, slug_field='username')
     room = serializers.PrimaryKeyRelatedField(read_only=True, default=None)
-    games = serializers.SerializerMethodField()
-
-    def get_games(self, obj):
-        games = obj.games.all()
-        return [{'deck': game.deck.pk, 'score': game.score, 'time': str(game.time)} for game in games]
+    starred_decks = serializers.PrimaryKeyRelatedField(queryset=Deck.objects.all(), many=True)
+    finished_decks = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
 
     class Meta:
         model = Player
@@ -30,14 +27,14 @@ class PlayerSerializer(serializers.ModelSerializer):
             'user',
             'room',
             'skill_rating',
-            'games'
+            'starred_decks',
+            'finished_decks',
         )
 
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(read_only=True, slug_field='username')
     interests = serializers.SlugRelatedField(queryset=Tag.objects.all(), many=True, slug_field='name')
-    starred_decks = serializers.PrimaryKeyRelatedField(queryset=Deck.objects.all(), many=True)
     is_complete = serializers.BooleanField(read_only=True)
     age = serializers.IntegerField(allow_null=True, read_only=True)
 
@@ -53,6 +50,5 @@ class ProfileSerializer(serializers.ModelSerializer):
             'birth_date',
             'name',
             'avatar',
-            'starred_decks',
             'onboarded',
         )

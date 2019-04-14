@@ -32,20 +32,20 @@ class DeckViewSet(ModelViewSet):
     @action(detail=True, methods=['post'])
     def mark_finished(self, request, *args, **kwargs):
         deck = self.get_object()
-        profile = request.user.profile
-        profile.finished_decks.add(deck)
-        profile.save()
-        return Response(status.HTTP_200_OK)
+        player = request.user.player
+        player.finished_decks.add(deck)
+        player.save()
+        return Response({'message': 'DEPRECATED'}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
     def star(self, request, *args, **kwargs):
         deck = self.get_object()
-        profile = request.user.profile
-        if deck in profile.starred_decks.all():
-            profile.starred_decks.remove(deck)
+        player = request.user.player
+        if deck in player.starred_decks.all():
+            player.starred_decks.remove(deck)
         else:
-            profile.starred_decks.add(deck)
-        profile.save()
+            player.starred_decks.add(deck)
+        player.save()
         return Response(status.HTTP_200_OK)
 
     @action(detail=True)

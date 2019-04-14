@@ -7,11 +7,10 @@ from .serializers import RoomSerializer, FinishSerializer, GameResultSerializer
 from .models import Room, GameResult
 from . import exceptions
 from . import signals
+from accounts.models import Player
 from articles.models import Article, Deck
 from articles.serializers import DeckSerializer
-import logging
-import json
-import uuid
+import random
 
 
 class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
@@ -80,9 +79,7 @@ class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
             raise exceptions.NotInRoomException()
         deck = room.deck
         score = request_data['score']
-        game_uid = uuid.uuid4()
-        scores = [(player, score)]
-        signals.game_ended.send(self.__class__, room=room, deck=deck, game_uid=game_uid, scores=scores)
+        signals.game_ended.send(self.__class__, room=room, deck=deck, player_scores={player.pk: score})
         return Response(status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
@@ -96,3 +93,13 @@ class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
         player.room = None
         player.save()
         return Response(status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=False)
+    def fake_a_game(self, request, *args, **kwargs):
+        player = Player.objects.order_by('?').first()
+        score = random.randint(-200, 2000)
+        deck = Deck.objects.order_by('?').first()
+        room = Room.objects.create(deck=deck, max_players=1)
+        room.players.add(player)
+        signals.game_ended.send(self.__class__, room=room, deck=deck, player_scores={player.pk: score})
+        return Response(status=status.HTTP_201_CREATED)
