@@ -175,7 +175,7 @@ class RoomConsumer(JsonWebsocketConsumer):
             self.channel_name
         )
         #logging.info("room created")
-        signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
+        #signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
         self.send_everyone({"action": "admin", "message": "created room %s" % str(room.pk)})
         self.send_everyone({"action": "admin", "message": "created room .. waiting for other players to join"})
 
@@ -192,7 +192,7 @@ class RoomConsumer(JsonWebsocketConsumer):
                 self.channel_name
             )
             #logging.info("joined room")
-            signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
+            #signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
             self.send_json({"action":"admin", "message": "alloted room %s" % str(room.pk)})
             self.send_everyone({"action": "admin", "message": "User {} has joined the room".format(self.user)})
             # check if game is ready
@@ -226,7 +226,7 @@ class RoomConsumer(JsonWebsocketConsumer):
                 self.user.save()
                 #logging.info("User {} left room {}".format(user.pk, room.pk))
                 room.delete_if_empty()
-                signals.player_left_room.send(sender=self.__class__, room=room, player=self.user.player)
+                #signals.player_left_room.send(sender=self.__class__, room=room, player=self.user.player)
                 #logging.info("Please check that room is indeed deleted")
                 #logging.info(Room.objects.all())
 
@@ -289,7 +289,7 @@ class RoomConsumer(JsonWebsocketConsumer):
         self.next_article()
 
     # def create_game_results(self):
-        signals.game_started.send(sender=self.__class__, room=self.user.player.room, deck=self.user.player.room.deck)
+        #signals.game_started.send(sender=self.__class__, room=self.user.player.room, deck=self.user.player.room.deck)
 
     def next_article(self):
         logging.info(".. entering article handler ..")
@@ -311,7 +311,7 @@ class RoomConsumer(JsonWebsocketConsumer):
                 }
             })
             #TODO clean up disconnection
-            signals.game_started.send(sender=self.__class__, room=self.user.player.room, deck=deck, game_uid=self.user.player.room.pk, scores=list_of_scores)
+            #signals.game_started.send(sender=self.__class__, room=self.user.player.room, deck=deck, game_uid=self.user.player.room.pk, scores=list_of_scores)
             self.websocket_disconnect({"code": None})
         else:
             curr_article = Article.objects.get(pk=list_articles[article_counter])
