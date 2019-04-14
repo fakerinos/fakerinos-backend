@@ -7,6 +7,7 @@ import json
 from django.core import serializers
 import random
 from articles.serializers import ArticleSerializer,DeckSerializer,TagSerializer
+from rest_framework.renderers import JSONRenderer
 
 """
 ### TODOs
@@ -93,7 +94,7 @@ class RoomConsumer(JsonWebsocketConsumer):
 
         except Exception as e:
             logging.exception("find room :: No room name found OR no subject found")
-            logging.exception(e)
+            # logging.exception(e)
 
         if self.deck_pk is None:
             number_of_decks = len(Deck.objects.all())
@@ -128,7 +129,7 @@ class RoomConsumer(JsonWebsocketConsumer):
             if len(room.players.all()) != room.max_players:
                 self.join_room(room)
                 break
-        logging.info("YOYOYOYOYOYOYO" + str(self.user.player.room))
+        # logging.info("YOYOYOYOYOYOYO" + str(self.user.player.room))
         # if self.user.player.room is not None:
         #     room = self.user.player.room
         #     room.delete_if_empty()
@@ -203,38 +204,29 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def disconnect(self, code):
         logging.info(".. entering disconnect handler ..")
-        logging.info("precheck all rooms")
-        logging.info(Room.objects.all())
+        # logging.info("precheck all rooms")
+        # logging.info(Room.objects.all())
         user = self.scope['user']
         room = user.player.room
-        logging.info("deleting room from player and room itself")
+        # logging.info("deleting room from player and room itself")
         try:
             #TODO what if room is still exists because player disconnects wrongly
             if user.is_authenticated:
                 # logging.info("how many people in room :: " + str(len(room.players.all())))
                 #TODO fully disociate player from room
-                self.user.player.room = None
+                self.user.player.room.players.remove(self.user.player)
                 self.user.save()
-                if self.user.player.room is not None:
-                    print("PLEASEPLEASE")
-                else:
-                    print("PUSSY")
-                # logging.info("just for good measure")
-                # logging.info(user.player.room)
-                # logging.info("so you left ?")
-                logging.info("REALLY ??? :: " + str(len(room.players.all())))
                 logging.info("User {} left room {}".format(user.pk, room.pk))
                 room.delete_if_empty()
 
-                logging.info("confirm room is deleted")
+                logging.info("Please check that room is indeed deleted")
                 logging.info(Room.objects.all())
         except Exception as e:
             logging.exception("Disconnect ERROR :::")
             logging.exception(e)
 
     def receive_json(self, content, **kwargs):
-        logging.info("######################### receiving message from client ##########################")
-        logging.info("seriously")
+        logging.info(".. receiving message from client ..")
 
         self.send_json({
             "action": "admin",
@@ -270,23 +262,8 @@ class RoomConsumer(JsonWebsocketConsumer):
         logging.info(".. entering admin handler ..")
         getattr(self, message)()
 
-    def start_game(self, message):
-        # TODO send everyone article
-        # TODO get specific articles
-        # Anyone can start game model
-        async_to_sync(self.channel_layer.group_send)({
-            self.room_group_name,
-            {
-                "type": "article_request",
-                "message": json.dumps('{"message": 1}'),
-            }
-        })
-        # doesnt work
-        self.send_everyone(self.article_request(1))
-
-        # TODO start time and counter
-
     def game_ready(self):
+        # TODO start time and counter
         self.send_json({
             "action": "admin",
             "message": "game is ready",
@@ -311,29 +288,35 @@ class RoomConsumer(JsonWebsocketConsumer):
             self.count = 0
         else:
             logging.info("getting article")
-            article = Article.objects.filter(pk=list[self.count-1])
+            article = Article.objects.get(pk=list[self.count-1])
             logging.info(article)
+            # async_to_sync(self.channel_layer.group_send)(
+            #     self.room_group_name,
+            #     {
+            #         "type": "send",
+            #         "action": "new card",
+            #         "message": JSONRenderer().render(ArticleSerializer(article).data),
+            #     })
             self.send_everyone({
                 "action": "new card",
-                "message": serializers.serialize("json", article),
+                "message": str(JSONRenderer().render(ArticleSerializer(article).data)),
+                # "message": serializers.serialize("json", ArticleSerializer(article))
             })
             self.count += 1
 
-
-
-    def article_request(self, article_pk):
-        try:
-            if Article.objects.filter(pk=article_pk).exists():
-                article = serializers.serialize("json", [Article.objects.get(pk=article_pk)])
-            else:
-                article = "Article Not Found"
-            self.send(text_data=json.dumps({
-                'message': article
-            }))
-        except Exception as e:
-            self.send_json({"message": "beeeeeeeech you cant even send request properly like whaaAaaAAAaaAAttT"})
-            logging.exception("article request ::: ")
-            logging.exception(e)
+    # def article_request(self, article_pk):
+    #     try:
+    #         if Article.objects.filter(pk=article_pk).exists():
+    #             article = serializers.serialize("json", [Article.objects.get(pk=article_pk)])
+    #         else:
+    #             article = "Article Not Found"
+    #         self.send(text_data=json.dumps({
+    #             'message': article
+    #         }))
+    #     except Exception as e:
+    #         self.send_json({"message": "improper request sent"})
+    #         logging.exception("article request ::: ")
+    #         logging.exception(e)
 
     def update_score(self):
         user = self.scope['user']
@@ -361,29 +344,10 @@ class RoomConsumer(JsonWebsocketConsumer):
                 logging.exception(e)
                 self.send_json({
                     "action": "admin",
-                    "message": "message did not send out, please try again",
+                    "message": "Your message was not send out, please try again",
                 })
         else:
             self.send_json({
                 "action": "admin",
-                "message": "sorry bro, don't fomo. you're not in any group yet"
+                "message": "Can't send message. You're not in any group yet"
             })
-
-# class GameConsumer(WebsocketConsumer):
-#
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         async_to_sync(self.channel_layer.group_add)(
-#             "gameconsumer",
-#             self.channel_name
-#         )
-#
-#     def websocket_connect(self, message):
-#         """self.game_group_name = 'game_%s'"""
-#         self.accept()
-#
-#     def websocket_disconnect(self, message):
-#         """
-#         # async_to_sync(self.channel_layer.send(
-#         #
-#         # ))"""

@@ -4,6 +4,7 @@ from . import signals
 import logging
 from accounts.models import Player
 
+
 class Room(models.Model):
     max_players = models.IntegerField(default=2, editable=False)
     status = models.CharField(max_length=128, default='NEW', editable=False, blank=True)
@@ -15,11 +16,11 @@ class Room(models.Model):
 
     def delete_if_empty(self):
         if self.is_empty():
-            logging.info("Room {} is empty. Deleting...".format(self.pk))
+            logging.info(f"Room {self.pk} is empty. Deleting...")
             self.delete()
         else:
-            logging.error("models delete_if_empty ::: ROOM NOT EMPTY LA SIAL")
-            logging.error("players still in the room: " + str(self.players.all()))
+            logging.info(f"Room {self.pk} is not empty. Won't delete.")
+            logging.info("Some players are still in the room: "+ str(self.players.all()))
 
     def is_empty(self):
         return not self.players.exists()
