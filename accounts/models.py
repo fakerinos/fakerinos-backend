@@ -18,6 +18,8 @@ class Player(models.Model):
     skill_rating = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(1000)],
                                        editable=False,
                                        default=500)
+    score = models.IntegerField(default=0)
+    ready = models.BooleanField(default=False)
 
 
 class Profile(models.Model):

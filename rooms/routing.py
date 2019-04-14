@@ -2,5 +2,8 @@ from django.urls import path
 from . import consumers
 
 websocket_urlpatterns = [
-    path('<subject>/', consumers.RoomConsumer),
-]
+    path('', consumers.RoomConsumer),
+    path('<tag>/', consumers.RoomConsumer),
+    # path('<tag>/<room_pk>/', consumers.RoomConsumer),
+    ]
+
