@@ -1,4 +1,6 @@
 from django.db import models
+from django.core import validators
+from accounts.models import Player
 import logging
 
 
@@ -21,18 +23,38 @@ class Room(models.Model):
         return not self.players.exists()
 
 
+def player_scores_to_commasep(player_scores):
+    player_pks, scores = zip(*player_scores.items())
+    return ','.join(map(str, player_pks)), ','.join(map(str, scores))
+
+
 class GameResult(models.Model):
     """
-    Create one per player per game.
-    `game_uid` field must be unique for each game.
-    This serves to group `GameResult`s that belong to the same game session.
+    Create one per game.
+    USE THE `cls.create()` METHOD TO CREATE THESE OBJECTS, NOT `cls.objects.create()`.
     """
-    game_uid = models.UUIDField(null=True)  # must be provided at creation time
-    player = models.ForeignKey('accounts.Player', related_name='games', editable=False, on_delete=models.CASCADE)
-    deck = models.ForeignKey('articles.Deck', on_delete=models.SET_NULL, editable=False, null=True)
+    players = models.ManyToManyField('accounts.Player', related_name='games')
     time = models.DateTimeField(auto_now_add=True, blank=True, null=True, editable=False)
-    score = models.IntegerField(editable=False, null=True)
+    deck = models.ForeignKey('articles.Deck', on_delete=models.SET_NULL, editable=False, null=True)
+    player_pks = models.CharField(max_length=500, validators=[validators.int_list_validator()], default='')
+    scores = models.CharField(max_length=500, validators=[validators.int_list_validator()], default='')
+
+    @classmethod
+    def create(cls, players, deck, player_scores, **kwargs):
+        game_result = cls.objects.create(deck=deck, **kwargs)
+        game_result.player_scores = player_scores
+        game_result.save()
+        game_result.players.set(players)
+        return game_result
 
     @property
-    def game_results(self):
-        return GameResult.objects.filter(game_uid=self.game_uid)
+    def player_scores(self) -> dict:
+        player_pks = [int(v) for v in self.player_pks.split(',')]
+        scores = [int(v) for v in self.scores.split(',')]
+        assert len(scores) == len(player_pks), "PLAYER-SCORE LISTS MISMATCH!"
+        return dict(zip(player_pks, scores))
+
+    @player_scores.setter
+    def player_scores(self, score_dict: dict):
+        # TODO: parse {player: score} dict and store it as key-value lists
+        self.player_pks, self.scores = player_scores_to_commasep(score_dict)

@@ -20,11 +20,6 @@ class PlayerSerializer(serializers.ModelSerializer):
     room = serializers.PrimaryKeyRelatedField(read_only=True, default=None)
     starred_decks = serializers.PrimaryKeyRelatedField(queryset=Deck.objects.all(), many=True)
     finished_decks = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
-    games = serializers.SerializerMethodField()
-
-    def get_games(self, obj):
-        games = obj.games.all()
-        return [{'deck': game.deck.pk, 'score': game.score, 'time': str(game.time)} for game in games]
 
     class Meta:
         model = Player
@@ -34,7 +29,6 @@ class PlayerSerializer(serializers.ModelSerializer):
             'skill_rating',
             'starred_decks',
             'finished_decks',
-            'games'
         )
 
 
