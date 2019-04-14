@@ -20,9 +20,10 @@ class Player(models.Model):
                                        editable=False,
                                        default=500)
     rank = models.PositiveIntegerField(null=True, editable=False)
-    score = models.PositiveIntegerField(default=0, editable=False)
     finished_decks = models.ManyToManyField(Deck, related_name='finishers', editable=False, blank=True)
     starred_decks = models.ManyToManyField(Deck, related_name='starrers', blank=True)
+    score = models.IntegerField(default=0)
+    ready = models.BooleanField(default=False)
 
     def get_score(self, delta: timedelta = None):
         now = timezone.now()

@@ -93,9 +93,9 @@ class TestSinglePlayer(APITestCase):
         response = self.list_rooms(user=self.player)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # def test_player_retrieve_room(self):
-    #     response = self.retrieve_room(self.room.pk, user=self.player)
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    def test_player_retrieve_room(self):
+        response = self.retrieve_room(self.room.pk, user=self.player)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_player_create_room(self):
         response = self.create_room(user=self.player)
@@ -105,19 +105,25 @@ class TestSinglePlayer(APITestCase):
         response = self.delete_room(self.room.pk, user=self.player)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # def test_player_update_room(self):
-    #     response = self.update_room(self.room.pk, {'max_players': 100, 'status': 'NEW'}, user=self.player)
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-    #
-    # def test_player_partial_update_room(self):
-    #     response = self.partial_update_room(self.room.pk, {'max_players': 100}, user=self.player)
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    def test_player_update_room(self):
+        response = self.update_room(self.room.pk, {'max_players': 100, 'status': 'NEW'}, user=self.player)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_player_partial_update_room(self):
+        response = self.partial_update_room(self.room.pk, {'max_players': 100}, user=self.player)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_player_create_room_already_in_room(self):
         self.player.player.room = self.room
         self.player.player.save()
         response = self.create_room(user=self.player)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_player_create_room_already_hosting_room(self):
+        self.player.player.hosted_room = self.room
+        self.player.player.save()
+        response = self.create_room(user=self.player)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     # endregion
 
