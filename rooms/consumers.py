@@ -179,7 +179,7 @@ class RoomConsumer(JsonWebsocketConsumer):
             self.channel_name
         )
         #logging.info("room created")
-        #signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
+        # signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
         self.send_everyone({"action": "admin", "message": "created room %s" % str(room.pk)})
         self.send_everyone({"action": "admin", "message": "created room .. waiting for other players to join"})
 
@@ -196,7 +196,7 @@ class RoomConsumer(JsonWebsocketConsumer):
                 self.channel_name
             )
             #logging.info("joined room")
-            #signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
+            # signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
             self.send_json({"action":"admin", "message": "alloted room %s" % str(room.pk)})
             self.send_everyone({"action": "admin", "message": "User {} has joined the room".format(self.user)})
             # check if game is ready
