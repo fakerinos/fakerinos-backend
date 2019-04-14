@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from . import signals
 import logging
 from accounts.models import Player
+import json
 
 
 class Room(models.Model):
@@ -11,8 +12,7 @@ class Room(models.Model):
     subject = models.CharField(max_length=50, unique=True, editable=False, null=True, blank=True)
     tag = models.OneToOneField('articles.Tag', on_delete=models.PROTECT, null=True, blank=True)
     deck = models.OneToOneField('articles.Deck', on_delete=models.PROTECT, null=True)
-
-    # has a players relation in the Player model
+    article_counter = models.IntegerField(default=0)
 
     def delete_if_empty(self):
         if self.is_empty():
