@@ -34,7 +34,7 @@ class PlayerSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(read_only=True, slug_field='username')
-    interests = serializers.SlugRelatedField(queryset=Tag.objects.all(), many=True, slug_field='name')
+    interests = serializers.HyperlinkedRelatedField(queryset=Tag.objects.all(), many=True, view_name='tag-detail', lookup_field='name')
     is_complete = serializers.BooleanField(read_only=True)
     age = serializers.IntegerField(allow_null=True, read_only=True)
 
