@@ -61,4 +61,6 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = (
             'name',
+            'description',
+            'thumbnail_url',
         )

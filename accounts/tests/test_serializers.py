@@ -41,7 +41,8 @@ class TestProfileSerializer(APITestCase):
             'age',
             'gender',
             'birth_date',
-            'name',
+            'first_name',
+            'last_name',
             'avatar',
             'onboarded',
         ]
@@ -64,7 +65,8 @@ class TestProfileSerializer(APITestCase):
             'age': instance.age,
             'birth_date': instance.birth_date.strftime('%Y-%m-%d'),
             'gender': instance.gender,
-            'name': instance.name,
+            'first_name': instance.first_name,
+            'last_name': instance.last_name,
             'avatar': instance.avatar,
             'onboarded': instance.onboarded,
         }

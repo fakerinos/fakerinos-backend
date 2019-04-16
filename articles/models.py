@@ -3,6 +3,8 @@ from django.db import models
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+    thumbnail_url = models.URLField(max_length=1000, blank=True)
 
 
 class Article(models.Model):
@@ -11,8 +13,8 @@ class Article(models.Model):
     truth_value = models.BooleanField(null=True, blank=True, default=None)
     rating = models.CharField(max_length=50, blank=True)
     domain = models.URLField(blank=True)
-    url = models.URLField(max_length=500, blank=True)
-    thumbnail_url = models.URLField(max_length=500, blank=True)
+    url = models.URLField(max_length=1000, blank=True)
+    thumbnail_url = models.URLField(max_length=1000, blank=True)
     author = models.CharField(max_length=100, blank=True)
     tags = models.ManyToManyField(Tag, related_name='articles', blank=True)
     explanation = models.TextField(blank=True)
