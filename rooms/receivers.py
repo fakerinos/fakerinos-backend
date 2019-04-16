@@ -1,7 +1,7 @@
 from django.dispatch import receiver
 from .signals import game_ended, game_started, player_joined_room, player_left_room
 from accounts.models import Player
-from .models import GameResult
+from .models import GameResult, Room
 import logging
 
 
@@ -24,7 +24,7 @@ def create_game_results(sender, **kwargs):
     players_in_room = room.players.count()
     for player_pk, score in player_scores.items():
         player = Player.objects.get(pk=player_pk)
-        player.room = None
+        room.players.remove(player)
         player.save()
         players_in_room -= 1
         if players_in_room <= 0:

@@ -134,19 +134,6 @@ class RoomConsumer(JsonWebsocketConsumer):
             if len(room.players.all()) != room.max_players:
                 self.join_room(room)
                 break
-        # if self.user.player.room is not None:
-        #     room = self.user.player.room
-        #     room.delete_if_empty()
-        #     if self.user.player.room is not None:
-        #         #TODO send response
-        #         #logging.info("player still in room lol")
-        #         self.user.player.room.force_delete()
-        #         if self.user.player.room is not None:
-        #             #logging.info("how da fak")
-        #         else:
-        #             self.create_room(self.tag)
-        #     else:
-        #         self.create_room(self.tag)
         if self.user.player.room is None:
             self.create_room(self.tag)
 
@@ -204,9 +191,9 @@ class RoomConsumer(JsonWebsocketConsumer):
             if len(room.players.all()) == room.max_players:
                 self.game_ready()
 
-        # elif self.user.profile in room.players.all():
-        #     # TODO how to handle if user already in room --> will that happen lol
-        #     #logging.info("Already in room bro")
+        elif self.user.profile in room.players.all():
+            #TODO how to handle if user already in room --> will that happen lol
+            logging.info("Already in room bro")
 
         elif len(room.players.all()) == room.max_players:
             #logging.info("room full ==> try again")
@@ -388,10 +375,6 @@ class RoomConsumer(JsonWebsocketConsumer):
             logging.exception("Error in getting list of player scores")
             #logging.exception(e)
         return list_of_scores
-
-
-    def submit_final_score(self):
-        user = self.scope['user']
 
     def send_everyone(self, nested_data):
         logging.info(".. entering sending everyone handler ..")
