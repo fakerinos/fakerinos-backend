@@ -40,11 +40,12 @@ def get_all_player_ranks(delta=None, use_cache=True):
     return output
 
 
-def get_player_rank_info(delta=None, count=10, relative=False, target_player=None):
+def get_player_rank_info(request, delta=None, count=10, relative=False, target_player=None):
     """
     Get verbose rank information for players in rank range.
 
     Args:
+        request: Request object from view. Required for serializer context.
         delta: Time delta (backwards from the current moment) to start counting scores from
         count: The number of player records to return
         relative:
@@ -77,7 +78,7 @@ def get_player_rank_info(delta=None, count=10, relative=False, target_player=Non
         profile = player.user.profile
         data = {
             'rank': rank,
-            'profile': ProfileSerializer(profile).data,
+            'profile': ProfileSerializer(profile, context={'request': request}).data,
             'username': player.user.username,
             'score': rank_to_score[rank],
             'skill_rating': player.skill_rating
@@ -91,22 +92,22 @@ class TopLeaderBoardViewSet(viewsets.ViewSet):
 
     @action(methods=['get'], detail=False)
     def all(self, request, *args, **kwargs):
-        datas = get_player_rank_info()
+        datas = get_player_rank_info(request, )
         return Response(datas, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=False)
     def day(self, request, *args, **kwargs):
-        datas = get_player_rank_info(delta=timedelta(days=1))
+        datas = get_player_rank_info(request, delta=timedelta(days=1))
         return Response(datas, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=False)
     def week(self, request, *args, **kwargs):
-        datas = get_player_rank_info(delta=timedelta(weeks=1))
+        datas = get_player_rank_info(request, delta=timedelta(weeks=1))
         return Response(datas, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=False)
     def month(self, request, *args, **kwargs):
-        datas = get_player_rank_info(delta=timedelta(weeks=4))
+        datas = get_player_rank_info(request, delta=timedelta(weeks=4))
         return Response(datas, status=status.HTTP_200_OK)
 
 
@@ -115,20 +116,22 @@ class RelativeLeaderBoardViewSet(viewsets.ViewSet):
 
     @action(methods=['get'], detail=False)
     def all(self, request, *args, **kwargs):
-        datas = get_player_rank_info(relative=True, target_player=request.user.player)
+        datas = get_player_rank_info(request, relative=True, target_player=request.user.player)
         return Response(datas, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=False)
     def day(self, request, *args, **kwargs):
-        datas = get_player_rank_info(delta=timedelta(days=1), relative=True, target_player=request.user.player)
+        datas = get_player_rank_info(request, delta=timedelta(days=1), relative=True, target_player=request.user.player)
         return Response(datas, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=False)
     def week(self, request, *args, **kwargs):
-        datas = get_player_rank_info(delta=timedelta(weeks=1), relative=True, target_player=request.user.player)
+        datas = get_player_rank_info(request, delta=timedelta(weeks=1), relative=True,
+                                     target_player=request.user.player)
         return Response(datas, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=False)
     def month(self, request, *args, **kwargs):
-        datas = get_player_rank_info(delta=timedelta(weeks=4), relative=True, target_player=request.user.player)
+        datas = get_player_rank_info(request, delta=timedelta(weeks=4), relative=True,
+                                     target_player=request.user.player)
         return Response(datas, status=status.HTTP_200_OK)
