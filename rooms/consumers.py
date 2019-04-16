@@ -104,9 +104,6 @@ class RoomConsumer(JsonWebsocketConsumer):
             logging.exception("find room :: No room name found OR no subject found")
             # #logging.exception(e)
 
-        if self.deck_pk is None:
-            number_of_decks = len(Deck.objects.all())
-            self.deck_pk = random.randint(1, number_of_decks+1)
         #TODO am i searching for subject
 
         """
@@ -158,24 +155,31 @@ class RoomConsumer(JsonWebsocketConsumer):
         logging.info(".. entering create room handler ..")
         # TODO create room with subject and add host
         # TODO assign deck
-        if tag is not None:
-            room = Room.objects.create(tag=tag)
-        else:
-            room = Room.objects.create(tag=None)
-        #logging.info("User {} CREATED room {}".format(self.scope['user'].id, room.id))
+            # if tag is not None:
+            #     room = Room.objects.create(tag=tag)
+            # else:
+            #     room = Room.objects.create(tag=None)
+            #logging.info("User {} CREATED room {}".format(self.scope['user'].id, room.id))
+        room = Room.objects.create()
+        room.save()
         self.user.player.room = room
-        self.user.player.hosted_room = room
         self.user.player.save()
+        if hasattr(self, "deck_pk") and self.deck_pk is not None:
+            pass
+        else:
+            number_of_decks = len(Deck.objects.all())
+            self.deck_pk = random.randint(1, number_of_decks)
+
         room.deck = Deck.objects.get(pk=self.deck_pk)
         room.save()
         self.room_group_name = 'room_%s' % self.user.player.room.pk
-        # TODO create group
+
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
             self.channel_name
         )
         #logging.info("room created")
-        #signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
+        # signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
         self.send_everyone({"action": "admin", "message": "created room %s" % str(room.pk)})
         self.send_everyone({"action": "admin", "message": "created room .. waiting for other players to join"})
 
@@ -192,7 +196,7 @@ class RoomConsumer(JsonWebsocketConsumer):
                 self.channel_name
             )
             #logging.info("joined room")
-            #signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
+            # signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
             self.send_json({"action":"admin", "message": "alloted room %s" % str(room.pk)})
             self.send_everyone({"action": "admin", "message": "User {} has joined the room".format(self.user)})
             # check if game is ready
@@ -316,7 +320,7 @@ class RoomConsumer(JsonWebsocketConsumer):
         else:
             curr_article = Article.objects.get(pk=list_articles[article_counter])
             #logging.info("getting article")
-            self.send_everyone({
+            self.send_json({
                 "action": "new card",
                 "message": str(JSONRenderer().render(ArticleSerializer(curr_article).data)),
                 # "message": serializers.serialize("json", ArticleSerializer(article))

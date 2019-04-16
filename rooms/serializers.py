@@ -18,14 +18,13 @@ class RoomSerializer(serializers.ModelSerializer):
             'max_players',
             'status',
             'players',
-            'subject',
             'deck',
+            'article_counter',
         )
         read_only_fields = (
             'max_players',
             'status',
             'players',
-            'subject',
         )
 
 
