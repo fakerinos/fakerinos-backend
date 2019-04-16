@@ -4,6 +4,7 @@ from rest_framework import permissions
 from rest_framework import viewsets
 from rest_framework import status
 from accounts.models import Player
+from accounts.serializers import ProfileSerializer
 from .models import LeaderBoardStaleMarker
 from datetime import timedelta
 import logging
@@ -73,8 +74,10 @@ def get_player_rank_info(delta=None, count=10, relative=False, target_player=Non
         ranks = ranks[:count]
     for rank in ranks:
         player = rank_to_player[rank]
+        profile = player.user.profile
         data = {
             'rank': rank,
+            'profile': ProfileSerializer(profile).data,
             'username': player.user.username,
             'score': rank_to_score[rank],
             'skill_rating': player.skill_rating
