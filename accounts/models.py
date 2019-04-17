@@ -37,7 +37,8 @@ class Profile(models.Model):
     education = models.CharField(max_length=50, default="Unknown", blank=True)
     gender = models.CharField(max_length=50, default="Unknown", blank=True)
     birth_date = models.DateField(null=True, blank=True)
-    name = models.CharField(max_length=255, blank=True)
+    first_name = models.CharField(max_length=255, blank=True)
+    last_name = models.CharField(max_length=255, blank=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     interests = models.ManyToManyField(Tag, related_name='interested_users', blank=True)
     onboarded = models.BooleanField(default=False, blank=True)
@@ -50,7 +51,7 @@ class Profile(models.Model):
             self.birth_date is not None,
             self.gender != "Unknown",
             self.avatar is not None,
-            self.name,
+            (self.first_name or self.last_name),
         ]
         return all(conditions)
 

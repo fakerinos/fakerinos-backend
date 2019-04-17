@@ -48,7 +48,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             'age',
             'gender',
             'birth_date',
-            'name',
+            'first_name',
+            'last_name',
             'avatar',
             'onboarded',
         )

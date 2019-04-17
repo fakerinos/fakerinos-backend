@@ -5,4 +5,6 @@ codecov:
     project:
       default:
         target: 100
-        
+
+coverage:
+  range: "10...100"
