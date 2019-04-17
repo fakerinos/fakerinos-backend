@@ -46,7 +46,7 @@ def update_player_metrics(sender, **kwargs):
     # Sort all players by score (or some other metric) in DESCENDING ORDER and assign ranks
     # TODO: improve efficiency
     for i, player in enumerate(get_sorted_players()):
-        logging.error(f"score {player.score} rank {i}")
+        logging.info(f"score {player.score} rank {i}")
         player.rank = i + 1
         player.save()
 
