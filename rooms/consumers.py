@@ -147,6 +147,7 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def receive_json(self, content, **kwargs):
         logging.info(".. receiving message from client")
+        logging.info(content)
         if "type" in content.keys():
             get_action = content["message"]["action"]
             get_schema = content["message"]["schema"]
