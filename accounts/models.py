@@ -27,7 +27,8 @@ class Player(models.Model):
 
     def get_score(self, delta: timedelta = None):
         now = timezone.now()
-        start_time = now if delta is None else now - delta
+        beginning_of_time = timezone.datetime.fromtimestamp(0)
+        start_time = beginning_of_time if delta is None else now - delta
         games = self.games.all() if delta is None else self.games.filter(time__gte=start_time)
         return sum([game.player_scores[self.pk] for game in games])
 
