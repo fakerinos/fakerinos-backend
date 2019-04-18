@@ -1,5 +1,6 @@
 # Requirements shared across all environments
 
+boto3
 channels==2.1.7
 channels-redis==2.3.3
 django==2.1.7
