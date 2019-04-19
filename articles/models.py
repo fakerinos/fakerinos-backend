@@ -5,7 +5,7 @@ import numpy as np
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
-    thumbnail_url = models.URLField(max_length=1000, blank=True)
+    thumbnail_url = models.ImageField(blank=True, null=True)
 
     def __str__(self):
         return f"Tag ({self.name})"
@@ -28,8 +28,8 @@ class Article(models.Model):
     false_swipers = models.ManyToManyField('accounts.Player', related_name='false_swiped')
 
     def __str__(self):
-        HEADLINE_MAX_LEN = 40
-        headline = f"{self.headline[:HEADLINE_MAX_LEN]}..." if len(self.headline) > HEADLINE_MAX_LEN else self.headline
+        headline_max_len = 40
+        headline = f"{self.headline[:headline_max_len]}..." if len(self.headline) > headline_max_len else self.headline
         return f"Article ({headline})"
 
     @property
