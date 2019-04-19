@@ -42,26 +42,32 @@ class RoomConsumer(JsonWebsocketConsumer):
         logging.info("\t{} requesting to join a room".format(self.user))
         self.room_pk = None
         self.tag = None
+        path_dict = self.scope['url_route']['kwargs']
+        logging.info(path_dict)
         # should not request room when already in room
         if self.user.player.room is not None:
             self.send_json({"action": "admin", "message": "There is something wrong with your connection. Please try again"})
             # self.websocket_disconnect({"code": None})
             self.leave_room()
             self.close()
-        if 'tag' in self.scope['url_route']['kwargs'].keys():
-            self.deck_pk = self.scope['url_route']['kwargs']['tag']
-        elif 'room_pk' in self.scope['url_route']['kwargs'].keys():
-            self.room_pk = self.scope['url_route']['kwargs']['room_pk']
+        if path_dict["play_mode"] == "single-player":
+            if 'deck_pk' in path_dict.keys():
+                self.deck_pk = path_dict['deck_pk']
+            if 'tag' in path_dict.keys():
+                self.tag = path_dict['tag']
+                self.create_room(self.tag)
+            else:
+                self.create_room(self.tag)
+
         else:
             logging.info("find room :: No room name found OR no subject found")
-
-        # quickmatching method
-        for room in Room.objects.all():
-            if len(room.players.all()) != room.max_players:
-                self.join_room(room)
-                break
-        if self.user.player.room is None:
-            self.create_room(self.tag)
+            # quickmatching method
+            for room in Room.objects.all():
+                if len(room.players.all()) != room.max_players:
+                    self.join_room(room)
+                    break
+            if self.user.player.room is None:
+                self.create_room(self.tag)
 
     def create_room(self, tag):
         logging.info("\t{} creating room".format(self.user))
@@ -72,6 +78,8 @@ class RoomConsumer(JsonWebsocketConsumer):
         # self.user.player.hosted_room = room
         self.user.player.save()
         if hasattr(self, "deck_pk") and self.deck_pk is not None:
+            if not Deck.objects.filter(pk=self.deck_pk).exists():
+                self.choose_random_deck()
             pass
         else:
             self.choose_random_deck()
@@ -88,6 +96,8 @@ class RoomConsumer(JsonWebsocketConsumer):
         # signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
         self.send_everyone({"action": "admin", "message": "created room %s" % str(room.pk)})
         self.send_everyone({"action": "admin", "message": "created room .. waiting for other players to join"})
+        if self.scope['url_route']['kwargs']["play_mode"] == "single-player":
+            self.game_ready_list_mode()
 
     def join_room(self, room_object):
         logging.info("\t{} attempting to join Room {}".format(self.user, room_object.pk))
@@ -206,7 +216,7 @@ class RoomConsumer(JsonWebsocketConsumer):
     def game_ready_list_mode(self):
         logging.info("\t{} entering Game Handler (returns list)".format(self.user))
         if hasattr(self, "hosted_room"):
-            if self.hosted_room == self.user.player.room and len(self.user.player.room.players.all()) == self.user.player.room.max_players:
+            if self.hosted_room == self.user.player.room and (len(self.user.player.room.players.all()) == self.user.player.room.max_players or self.scope['url_route']['kwargs']['play_mode']=="single-player"):
                 self.send_everyone({
                     "action": "admin",
                     "message": "game is ready",
@@ -347,7 +357,7 @@ class RoomConsumer(JsonWebsocketConsumer):
                                     "type": "receive_json",
                                     "message": {
                                         "action": "admin",
-                                        "schema": "leave_room",
+                                        "schema": "close",
                                     }
                                 }
                             )
