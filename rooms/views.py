@@ -3,8 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import permissions
 from rest_framework import status
-from .serializers import RoomSerializer, FinishSerializer, GameResultSerializer
-from .models import Room, GameResult
+from .serializers import RoomSerializer, FinishSerializer
+from .models import Room
 from . import exceptions
 from . import signals
 from accounts.models import Player

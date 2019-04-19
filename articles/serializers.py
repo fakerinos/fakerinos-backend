@@ -15,6 +15,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'pk',
             'headline',
             'truth_value',
+            'is_poll',
             'url',
             'rating',
             'domain',
@@ -24,6 +25,8 @@ class ArticleSerializer(serializers.ModelSerializer):
             'tags',
             'explanation',
             'published',
+            'average_score',
+            'weighted_average_score',
         )
 
 

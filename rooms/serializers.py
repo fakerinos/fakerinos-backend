@@ -36,20 +36,3 @@ class FinishSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         pass
-
-
-class GameResultSerializer(serializers.ModelSerializer):
-    username = serializers.SerializerMethodField()
-    deck = serializers.PrimaryKeyRelatedField(read_only=True)
-
-    def get_username(self, obj):
-        return obj.player.user.username
-
-    class Meta:
-        model = GameResult
-        fields = (
-            'deck',
-            'username',
-            'score',
-            'time'
-        )
