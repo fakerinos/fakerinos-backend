@@ -4,6 +4,7 @@ from . import views
 
 router = DefaultRouter()
 router.register('single-player', views.SinglePlayer, 'single-player')
+router.register('games', views.GameResultViewSet, 'games')
 
 urlpatterns = [
     path('', include(router.urls)),
