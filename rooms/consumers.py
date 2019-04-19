@@ -69,6 +69,7 @@ class RoomConsumer(JsonWebsocketConsumer):
         room.save()
         self.user.player.room = room
         self.hosted_room = room
+        # self.user.player.hosted_room = room
         self.user.player.save()
         if hasattr(self, "deck_pk") and self.deck_pk is not None:
             pass
@@ -102,6 +103,12 @@ class RoomConsumer(JsonWebsocketConsumer):
             )
             self.send_json({"action":"admin", "message": "alloted room %s" % str(room.pk)})
             self.send_everyone({"action": "admin", "message": "User {} has joined the room".format(self.user)})
+
+
+            for player in room.players.all():
+                if player.pk != self.user.player.pk:
+                    self.send_json({"action": "admin", "message": "Playing against {} Skill rating: {}".format(player.user, player.skill_rating)})
+
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
                 {
@@ -224,7 +231,7 @@ class RoomConsumer(JsonWebsocketConsumer):
         result = 0
         if article.truth_value is not None:
             if response == article.truth_value:
-                self.score +=1
+                result += 1
         if hasattr(self.user.player, "score"):
             self.user.player.score += result
         else:
