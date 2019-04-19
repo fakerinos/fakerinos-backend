@@ -7,6 +7,9 @@ class Tag(models.Model):
     description = models.TextField(blank=True)
     thumbnail_url = models.URLField(max_length=1000, blank=True)
 
+    def __str__(self):
+        return f"Tag ({self.name})"
+
 
 class Article(models.Model):
     headline = models.CharField(max_length=500)
@@ -23,6 +26,11 @@ class Article(models.Model):
     published = models.DateTimeField(null=True, blank=True)
     true_swipers = models.ManyToManyField('accounts.Player', related_name='true_swiped')
     false_swipers = models.ManyToManyField('accounts.Player', related_name='false_swiped')
+
+    def __str__(self):
+        HEADLINE_MAX_LEN = 40
+        headline = f"{self.headline[:HEADLINE_MAX_LEN]}..." if len(self.headline) > HEADLINE_MAX_LEN else self.headline
+        return f"Article ({headline})"
 
     @property
     def average_score(self):
@@ -51,6 +59,9 @@ class Deck(models.Model):
     description = models.CharField(max_length=200, blank=True)
     thumbnail_url = models.URLField(max_length=500, blank=True)
     tags = models.ManyToManyField(Tag, related_name='tags', blank=True, editable=False)
+
+    def __str__(self):
+        return f"Deck ({self.title})"
 
     # Has a 'starrers' M2M relation in accounts.profile
     # Has a 'finishers' M2M relation in accounts.profile
