@@ -13,6 +13,11 @@ class ArticleViewSet(ModelViewSet):
     serializer_class = ArticleSerializer
     permission_classes = (permissions.DjangoModelPermissions,)
 
+    def get_permissions(self):
+        if self.action and 'swipe' in self.action:
+            return [permissions.IsAuthenticated()]
+        return [permissions.DjangoModelPermissions()]
+
     @action(methods=['post'], detail=True)
     def swipe_true(self, request, *args, **kwargs):
         article_swiped.send(self.__class__, player=request.user.player, article=self.get_object(), outcome=True)

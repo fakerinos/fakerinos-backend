@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.db.models import signals
 from django.dispatch import receiver
 from .models import Deck, Article, Tag
-from rooms.signals import article_swiped
 import logging
 
 User = get_user_model()
