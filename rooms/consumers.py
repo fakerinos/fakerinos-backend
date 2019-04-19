@@ -107,7 +107,7 @@ class RoomConsumer(JsonWebsocketConsumer):
 
             for player in room.players.all():
                 if player.pk != self.user.player.pk:
-                    self.send_json({"action": "admin", "message": "Playing against {} Skill rating: {}".format(player.user, player.skill_rating)})
+                    self.send_json({"action": "admin", "message": "Playing against {}".format(player.user)})
 
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
@@ -138,10 +138,13 @@ class RoomConsumer(JsonWebsocketConsumer):
         logging.info("\tUser {} leaving room {}".format(self.user, self.user.player.room))
         try:
             user = self.scope['user']
-            room = user.player.room
-            if user.is_authenticated and room is not None:
+            room = self.user.player.room
+            if user.is_authenticated and Room.objects.filter(pk=room.pk).exists():
                 self.user.player.room.players.remove(self.user.player)
                 self.user.save()
+                logging.info("Room {}".format(room.players.all()))
+                for player in room.players.all():
+                    logging.info("Still inside is {}".format(player.user))
                 room.delete_if_empty()
             self.close()
         except Exception as e:
