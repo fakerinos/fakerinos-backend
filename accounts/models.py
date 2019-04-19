@@ -32,6 +32,9 @@ class Player(models.Model):
         games = self.games.all() if delta is None else self.games.filter(time__gte=start_time)
         return sum([game.player_scores[self.pk] for game in games])
 
+    def __str__(self):
+        return f"Player ({self.user})"
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, primary_key=True, editable=False, on_delete=models.CASCADE)
@@ -60,6 +63,9 @@ class Profile(models.Model):
     def age(self):
         if self.birth_date is not None:
             return (timezone.now().date() - self.birth_date).days // 365
+
+    def __str__(self):
+        return f"Profile ({self.user})"
 
 
 def get_anonymous_user_instance(user_model) -> User:
