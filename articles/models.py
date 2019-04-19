@@ -10,7 +10,8 @@ class Tag(models.Model):
 class Article(models.Model):
     headline = models.CharField(max_length=500)
     text = models.TextField(blank=True)
-    truth_value = models.BooleanField(null=True, blank=True, default=None)
+    truth_value = models.BooleanField(default=True, blank=True)
+    is_poll = models.BooleanField(default=False, blank=True)
     rating = models.CharField(max_length=50, blank=True)
     domain = models.URLField(blank=True)
     url = models.URLField(max_length=1000, blank=True)
@@ -19,6 +20,8 @@ class Article(models.Model):
     tags = models.ManyToManyField(Tag, related_name='articles', blank=True)
     explanation = models.TextField(blank=True)
     published = models.DateTimeField(null=True, blank=True)
+    true_swipers = models.ManyToManyField('accounts.Player', related_name='true_swiped')
+    false_swipers = models.ManyToManyField('accounts.Player', related_name='false_swiped')
 
 
 class Deck(models.Model):

@@ -15,6 +15,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'pk',
             'headline',
             'truth_value',
+            'is_poll',
             'url',
             'rating',
             'domain',
