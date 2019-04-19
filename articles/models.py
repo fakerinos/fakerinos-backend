@@ -26,6 +26,8 @@ class Article(models.Model):
 
     @property
     def average_score(self):
+        if not self.is_poll:
+            return int(self.truth_value)
         num_true = self.true_swipers.count()
         num_false = self.false_swipers.count()
         if num_true or num_false:
@@ -35,6 +37,8 @@ class Article(models.Model):
 
     @property
     def weighted_average_score(self):
+        if not self.is_poll:
+            return int(self.truth_value)
         true_swipers = list(self.true_swipers.all())
         false_swipers = list(self.false_swipers.all())
         if true_swipers or false_swipers:
