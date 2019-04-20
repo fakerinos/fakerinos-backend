@@ -24,6 +24,7 @@ class Player(models.Model):
     starred_decks = models.ManyToManyField(Deck, related_name='starrers', blank=True)
     score = models.IntegerField(default=0)
     ready = models.BooleanField(default=False)
+    game_score = models.IntegerField(default=0)
 
     def get_score(self, delta: timedelta = None):
         now = timezone.now()
@@ -31,6 +32,9 @@ class Player(models.Model):
         start_time = beginning_of_time if delta is None else now - delta
         games = self.games.all() if delta is None else self.games.filter(time__gte=start_time)
         return sum([game.player_scores[self.pk] for game in games])
+
+    def __str__(self):
+        return f"Player ({self.user})"
 
 
 class Profile(models.Model):
@@ -60,6 +64,9 @@ class Profile(models.Model):
     def age(self):
         if self.birth_date is not None:
             return (timezone.now().date() - self.birth_date).days // 365
+
+    def __str__(self):
+        return f"Profile ({self.user})"
 
 
 def get_anonymous_user_instance(user_model) -> User:

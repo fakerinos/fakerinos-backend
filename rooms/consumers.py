@@ -33,6 +33,10 @@ class RoomConsumer(JsonWebsocketConsumer):
 
         logging.info("\t{} connecting to WS".format(self.user))
         self.accept()
+        async_to_sync(self.channel_layer.group_add)(
+            "user_{}".format(self.user.player.pk),
+            self.channel_name,
+        )
         self.send_json({
             "action": "admin",
             "message": "connection success"
@@ -42,14 +46,9 @@ class RoomConsumer(JsonWebsocketConsumer):
         logging.info("\t{} requesting to join a room".format(self.user))
         self.room_pk = None
         self.tag = None
+
         path_dict = self.scope['url_route']['kwargs']
         logging.info(path_dict)
-        # should not request room when already in room
-        if self.user.player.room is not None:
-            self.send_json({"action": "admin", "message": "There is something wrong with your connection. Please try again"})
-            # self.websocket_disconnect({"code": None})
-            self.leave_room()
-            self.close()
         if path_dict["play_mode"] == "single-player":
             if 'deck_pk' in path_dict.keys():
                 self.deck_pk = path_dict['deck_pk']
@@ -58,7 +57,6 @@ class RoomConsumer(JsonWebsocketConsumer):
                 self.create_room(self.tag)
             else:
                 self.create_room(self.tag)
-
         else:
             logging.info("find room :: No room name found OR no subject found")
             # quickmatching method
@@ -71,12 +69,13 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def create_room(self, tag):
         logging.info("\t{} creating room".format(self.user))
+        player = self.user.player
         room = Room.objects.create()
         room.save()
-        self.user.player.room = room
+        player.room = room
         self.hosted_room = room
         # self.user.player.hosted_room = room
-        self.user.player.save()
+        player.save()
         if hasattr(self, "deck_pk") and self.deck_pk is not None:
             if not Deck.objects.filter(pk=self.deck_pk).exists():
                 self.choose_random_deck()
@@ -102,7 +101,8 @@ class RoomConsumer(JsonWebsocketConsumer):
     def join_room(self, room_object):
         logging.info("\t{} attempting to join Room {}".format(self.user, room_object.pk))
         room = room_object
-        if self.user.is_authenticated and self.user.profile not in room.players.all() and len(room.players.all()) < room.max_players:
+        user = self.user
+        if user.is_authenticated and user.profile not in room.players.all() and len(room.players.all()) < room.max_players:
             logging.info("User {} joined room {}".format(self.scope['user'].id, room.id))
             self.user.player.room = room
             self.user.player.save()
@@ -112,12 +112,22 @@ class RoomConsumer(JsonWebsocketConsumer):
                 self.channel_name
             )
             self.send_json({"action":"admin", "message": "alloted room %s" % str(room.pk)})
-            self.send_everyone({"action": "admin", "message": "User {} has joined the room".format(self.user)})
+            for playa in room.players.all():
+                if playa == self.user.player:
+                    pass
+                else:
+                    async_to_sync(self.channel_layer.group_send)(
+                        'user_{}'.format(playa.pk),
+                        {
+                            "type": "send_json",
+                            "action": "opponent",
+                            "message": "{} has joined the room".format(self.user),
+                        }
+                    )
 
-
-            for player in room.players.all():
-                if player.pk != self.user.player.pk:
-                    self.send_json({"action": "admin", "message": "Playing against {} Skill rating: {}".format(player.user, player.skill_rating)})
+            for playa in room.players.all():
+                if playa.pk != self.user.player.pk:
+                    self.send_json({"action": "opponent", "message": "Playing against {}".format(playa.user)})
 
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
@@ -125,7 +135,7 @@ class RoomConsumer(JsonWebsocketConsumer):
                 "type": "receive_json",
                 "message": {
                     "action": "admin",
-                    "schema": "game_ready_list_mode",
+                    "schema": "game_ready",
                     }
                 }
             )
@@ -140,7 +150,7 @@ class RoomConsumer(JsonWebsocketConsumer):
             #TODO handle if player wants specific room but full
             self.send_json({
                 "action": "admin",
-                "message": "room is full .. disconnecting from game",
+                "message": "Room is full... disconnecting from game",
             })
             self.close()
 
@@ -148,10 +158,13 @@ class RoomConsumer(JsonWebsocketConsumer):
         logging.info("\tUser {} leaving room {}".format(self.user, self.user.player.room))
         try:
             user = self.scope['user']
-            room = user.player.room
-            if user.is_authenticated and room is not None:
+            room = self.user.player.room
+            if user.is_authenticated and Room.objects.filter(pk=room.pk).exists():
                 self.user.player.room.players.remove(self.user.player)
                 self.user.save()
+                logging.info("Room {}".format(room.players.all()))
+                for player in room.players.all():
+                    logging.info("Still inside is {}".format(player.user))
                 room.delete_if_empty()
             self.close()
         except Exception as e:
@@ -200,7 +213,7 @@ class RoomConsumer(JsonWebsocketConsumer):
             if self.hosted_room == self.user.player.room and len(self.user.player.room.players.all()) == self.user.player.room.max_players:
                 self.send_everyone({
                     "action": "admin",
-                    "message": "game is ready",
+                    "message": "Game is ready",
                 })
                 async_to_sync(self.channel_layer.group_send)(
                     self.room_group_name,
@@ -234,7 +247,7 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def respond_specifically_to(self, answers):
         article_pk = answers["article_pk"]
-        response = answers["response"]
+        response = answers["answer"]
         room = self.user.player.room
         logging.info("User {} responding specifically to Article {}".format(self.user.id, article_pk))
         article = Article.objects.get(pk=article_pk)
@@ -247,14 +260,11 @@ class RoomConsumer(JsonWebsocketConsumer):
         else:
             logging.info("Something is wrong with player score values")
             self.user.player.score = result
-
-        list_of_scores = self.get_list_of_scores("id")
+        self.user.player.game_score += result
         self.send_everyone({
             "action": "result",
             "message": {
-                "result": result,
-                "score": list_of_scores,
-                "score_diff": {str(self.user): result}
+                "result": "{} has scored {} points!".format(self.user, result),
             }
         })
         self.user.player.ready = True
@@ -319,12 +329,12 @@ class RoomConsumer(JsonWebsocketConsumer):
             curr_article = Article.objects.get(pk=list_articles[article_counter])
             #logging.info("getting article")
             self.send_json({
-                "action": "new card",
+                "action": "card",
                 "message": str(JSONRenderer().render(ArticleSerializer(curr_article).data)),
                 # "message": serializers.serialize("json", ArticleSerializer(article))
             })
 
-    def check_ready(self, room, is_this_list):
+    def check_ready(self, room, is_this_list=False):
         logging.info("\t{} checking if everyone is ready".format(self.user))
         complete_ready = True
         for player in room.players.all():
@@ -373,11 +383,11 @@ class RoomConsumer(JsonWebsocketConsumer):
             #TODO why never here
             self.send_json({"action": "admin", "message": "Still waiting for all players to answer"})
 
-    def response(self, message):
+    def respond(self, message):
         logging.info("\t{} responding".format(self.user))
         logging.info(self.user)
-        response = message["response"]
-        time_remaining = message["time_remaining"]
+        article_pk = message["article_pk"]
+        response = message["answer"]
         # 0 for false 1 for true
         result = 0
         room = self.user.player.room
@@ -390,19 +400,20 @@ class RoomConsumer(JsonWebsocketConsumer):
         if response == curr_article.truth_value:
             result = 1
         elif response != curr_article.truth_value:
+            result = 0
+        elif response == -1:
             result = -1
         if hasattr(self.user.player, "score"):
             self.user.player.score += result
         else:
             self.user.player.score = result
 
+        self.user.player.game_score += result
         list_of_scores = self.get_list_of_scores("id")
         self.send_everyone({
             "action": "result",
             "message": {
-                "result": result,
-                "score": list_of_scores,
-                "score_diff": {str(self.user): result}
+                "result": {str(self.user): result},
             }
         })
         self.user.player.ready = True
@@ -416,10 +427,10 @@ class RoomConsumer(JsonWebsocketConsumer):
         try:
             if id_or_pk == "id":
                 for player in room.players.all():
-                    list_of_scores[str(player.user)] = player.score
+                    list_of_scores[str(player.user)] = player.game_score
             elif id_or_pk == "pk":
                 for player in room.players.all():
-                    list_of_scores[player.pk] = player.score
+                    list_of_scores[player.pk] = player.game_score
 
         except Exception as e:
             logging.exception("Error in getting list of player scores")

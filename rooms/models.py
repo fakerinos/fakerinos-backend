@@ -12,6 +12,10 @@ class Room(models.Model):
     deck = models.OneToOneField('articles.Deck', on_delete=models.PROTECT, null=True)
     article_counter = models.IntegerField(default=0)
 
+    def __str__(self):
+        players = [p.user.username for p in self.players.all()]
+        return f"Room | {self.deck} | Players {players} | Status {self.status}"
+
     def delete_if_empty(self):
         if self.is_empty():
             logging.info(f"Room {self.pk} is empty. Deleting...")
@@ -43,6 +47,10 @@ class GameResult(models.Model):
     deck = models.ForeignKey('articles.Deck', on_delete=models.SET_NULL, editable=False, null=True)
     player_pks = models.CharField(max_length=500, validators=[validators.int_list_validator()], default='')
     scores = models.CharField(max_length=500, validators=[validators.int_list_validator()], default='')
+
+    def __str__(self):
+        players = [p.user.username for p in self.players.all()]
+        return f"GameResult @ {self.time.strftime('%Y-%m-%d %H:%M:%S')} | {self.deck} | Players {players} "
 
     @classmethod
     def create(cls, players, deck, player_scores, **kwargs):
