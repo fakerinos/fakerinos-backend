@@ -67,8 +67,11 @@ class DeckViewSet(ModelViewSet):
         unseen_poll_articles = poll_articles.difference(seen_articles)[:5]
         if not unseen_poll_articles.count():
             raise NotFound("No new poll articles.")
-        deck = Deck(title="Current Affairs", articles=unseen_poll_articles)
-        return Response(DeckSerializer(deck).data, status=status.HTTP_200_OK)
+        deck = Deck.objects.create(title="Current Affairs")
+        deck.articles.set(unseen_poll_articles)
+        data = DeckSerializer(deck).data
+        deck.delete()
+        return Response(data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
     def mark_finished(self, request, *args, **kwargs):
