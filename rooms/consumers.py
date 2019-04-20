@@ -494,14 +494,14 @@ class RoomConsumer(JsonWebsocketConsumer):
             })
 
     def choose_random_deck(self):
-        number_of_decks = len(Deck.objects.all())
         list_pks = Deck.objects.all().values_list(flat=True)
-        self.deck_pk = list_pks[random.randint(0,len(list_pks))]
+        self.deck_pk = list_pks[random.randint(0,len(list_pks)-1)]
         if Deck.objects.filter(pk=self.deck_pk).exists() and Deck.objects.get(pk=self.deck_pk).articles.all() is not None:
             logging.info("Playing Deck " + str(self.deck_pk))
 
         else:
             logging.info("Deck empty")
+            logging.info("attempting to get but failed deck pk {}".format(self.deck_pk))
     def wait_for_disconnect(self):
         if self.user.player.room is not None:
             self.wait_for_disconnect()
