@@ -35,10 +35,10 @@ class TestArticlePermissions(ModelViewSetHelpersMixin, APITestCase):
 
     # region no-auth
     def test_noauth_list(self):
-        self.list(status.HTTP_401_UNAUTHORIZED)
+        self.list(status.HTTP_200_OK)
 
     def test_noauth_retrieve(self):
-        self.retrieve(status.HTTP_401_UNAUTHORIZED, lookup=self.article.pk)
+        self.retrieve(status.HTTP_200_OK, lookup=self.article.pk)
 
     def test_noauth_add(self):
         self.create(status.HTTP_401_UNAUTHORIZED)

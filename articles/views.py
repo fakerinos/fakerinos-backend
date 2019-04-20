@@ -24,12 +24,11 @@ class GetArticleByUrlViewSet(mixins.RetrieveModelMixin, GenericViewSet):
 class ArticleViewSet(ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = (permissions.DjangoModelPermissions,)
 
     def get_permissions(self):
         if self.action and 'swipe' in self.action:
             return [permissions.IsAuthenticated()]
-        return [permissions.DjangoModelPermissions()]
+        return [permissions.DjangoModelPermissionsOrAnonReadOnly()]
 
     @action(methods=['post'], detail=True)
     def swipe_true(self, request, *args, **kwargs):
@@ -114,7 +113,7 @@ class DeckViewSet(ModelViewSet):
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (permissions.DjangoModelPermissions,)
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
     lookup_field = 'name'
 
 
