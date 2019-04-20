@@ -59,11 +59,11 @@ class TestDeckAPI(APITestCase):
     # Unit Routing Tests
     def test_routing_works(self):
         response = self.client.get(reverse('deck-list'))
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_retrieve_deck(self):
         response = self.client.get(reverse('deck-detail', kwargs={'pk': self.deck.pk}))
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_specifically(self):
         self.client.force_login(self.adder)

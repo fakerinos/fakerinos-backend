@@ -7,6 +7,7 @@ router.register('article', views.ArticleViewSet)
 router.register('articlebyurl', views.GetArticleByUrlViewSet)
 router.register('deck', views.DeckViewSet)
 router.register('tag', views.TagViewSet)
+router.register('domain', views.DomainViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

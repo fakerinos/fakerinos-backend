@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from .models import Article, Deck, Tag
-from .serializers import ArticleSerializer, DeckSerializer, TagSerializer
+from .models import Article, Deck, Tag, Domain
+from .serializers import ArticleSerializer, DeckSerializer, TagSerializer, DomainSerializer
 from rooms.signals import article_swiped
 from rest_framework import permissions
 from random import shuffle
@@ -24,12 +24,11 @@ class GetArticleByUrlViewSet(mixins.RetrieveModelMixin, GenericViewSet):
 class ArticleViewSet(ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
-    permission_classes = (permissions.DjangoModelPermissions,)
 
     def get_permissions(self):
         if self.action and 'swipe' in self.action:
             return [permissions.IsAuthenticated()]
-        return [permissions.DjangoModelPermissions()]
+        return [permissions.DjangoModelPermissionsOrAnonReadOnly()]
 
     @action(methods=['post'], detail=True)
     def swipe_true(self, request, *args, **kwargs):
@@ -45,7 +44,7 @@ class ArticleViewSet(ModelViewSet):
 class DeckViewSet(ModelViewSet):
     queryset = Deck.objects.all()
     serializer_class = DeckSerializer
-    permission_classes = (permissions.DjangoModelPermissions,)
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
 
     @action(detail=False, methods=['get'])
     def recommended(self, request):
@@ -114,5 +113,11 @@ class DeckViewSet(ModelViewSet):
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (permissions.DjangoModelPermissions,)
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
     lookup_field = 'name'
+
+
+class DomainViewSet(ModelViewSet):
+    queryset = Domain.objects.all()
+    serializer_class = DomainSerializer
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
