@@ -44,7 +44,7 @@ class ArticleViewSet(ModelViewSet):
         return Response(status=status.HTTP_200_OK)
 
     @action(methods=['post'], detail=False)
-    def remake_decks(self,request, *args, **kwargs):
+    def remake_decks(self, request, *args, **kwargs):
         for tag in Tag.objects.all():
             filtered_articles = Article.objects.filter(tags=tag.pk)[0:5]
             d = Deck.objects.create()
@@ -53,6 +53,7 @@ class ArticleViewSet(ModelViewSet):
                 d.articles.add(article.pk)
             d.save()
         return Response(DeckSerializer(d).data, status=status.HTTP_200_OK)
+
 
 class DeckViewSet(ModelViewSet):
     """
