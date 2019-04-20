@@ -2,6 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from .models import Article, Deck, Tag
 from .serializers import ArticleSerializer, DeckSerializer, TagSerializer
 from rooms.signals import article_swiped
@@ -35,7 +36,7 @@ class DeckViewSet(ModelViewSet):
     serializer_class = DeckSerializer
     permission_classes = (permissions.DjangoModelPermissions,)
 
-    @action(detail=False)
+    @action(detail=False, methods=['get'])
     def recommended(self, request):
         decks = self.get_recommended_decks(request.user)
         serializer = self.get_serializer(decks, many=True)
@@ -46,7 +47,7 @@ class DeckViewSet(ModelViewSet):
         tagged_decks = Deck.objects.filter(tags__in=tags).distinct()[:10]
         return tagged_decks
 
-    @action(detail=False)
+    @action(detail=False, methods=['get'])
     def trending(self, request):
         decks = self.get_trending_decks(request.user)
         serializer = self.get_serializer(decks, many=True)
@@ -56,6 +57,21 @@ class DeckViewSet(ModelViewSet):
         decks = list(Deck.objects.all())
         shuffle(decks)
         return decks[:3]
+
+    @action(detail=False, methods=['get'])
+    def poll(self, request):
+        poll_articles = Article.objects.filter(is_poll=True)
+        true_swiped = request.user.player.true_swiped.all()
+        false_swiped = request.user.player.false_swiped.all()
+        seen_articles = true_swiped | false_swiped
+        unseen_poll_articles = poll_articles.difference(seen_articles)[:5]
+        if not unseen_poll_articles.count():
+            raise NotFound("No new poll articles.")
+        deck = Deck.objects.create(title="Current Affairs")
+        deck.articles.set(unseen_poll_articles)
+        data = DeckSerializer(deck).data
+        deck.delete()
+        return Response(data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
     def mark_finished(self, request, *args, **kwargs):
