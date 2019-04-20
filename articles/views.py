@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from .models import Article, Deck, Tag
-from .serializers import ArticleSerializer, DeckSerializer, TagSerializer
+from .models import Article, Deck, Tag, Domain
+from .serializers import ArticleSerializer, DeckSerializer, TagSerializer, DomainSerializer
 from rooms.signals import article_swiped
 from rest_framework import permissions
 from random import shuffle
@@ -45,7 +45,7 @@ class ArticleViewSet(ModelViewSet):
 class DeckViewSet(ModelViewSet):
     queryset = Deck.objects.all()
     serializer_class = DeckSerializer
-    permission_classes = (permissions.DjangoModelPermissions,)
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
 
     @action(detail=False, methods=['get'])
     def recommended(self, request):
@@ -116,3 +116,9 @@ class TagViewSet(ModelViewSet):
     serializer_class = TagSerializer
     permission_classes = (permissions.DjangoModelPermissions,)
     lookup_field = 'name'
+
+
+class DomainViewSet(ModelViewSet):
+    queryset = Domain.objects.all()
+    serializer_class = DomainSerializer
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)

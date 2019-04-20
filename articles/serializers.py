@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Article, Deck, Tag
+from .models import Article, Deck, Tag, Domain
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -66,4 +66,15 @@ class TagSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'thumbnail_url',
+        )
+
+
+class DomainSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Domain
+        fields = (
+            'url',
+            'credibility',
+            'is_satire',
+            'rating',
         )
