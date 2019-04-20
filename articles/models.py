@@ -19,6 +19,7 @@ class Article(models.Model):
     rating = models.CharField(max_length=50, blank=True)
     domain = models.URLField(blank=True)
     url = models.URLField(max_length=1000, blank=True)
+    url_hash = models.CharField(max_length=1000, blank=True, editable=False)
     thumbnail_url = models.URLField(max_length=1000, blank=True)
     author = models.CharField(max_length=100, blank=True)
     tags = models.ManyToManyField(Tag, related_name='articles', blank=True)
@@ -26,6 +27,11 @@ class Article(models.Model):
     published = models.DateTimeField(null=True, blank=True)
     true_swipers = models.ManyToManyField('accounts.Player', related_name='true_swiped')
     false_swipers = models.ManyToManyField('accounts.Player', related_name='false_swiped')
+
+    def save(self, *args, **kwargs):
+        if self.url is not None:
+            self.url_hash = self.url.replace('/', '_')
+        super(Article, self).save(*args, **kwargs)
 
     def __str__(self):
         headline_max_len = 40

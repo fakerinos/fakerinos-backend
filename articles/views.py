@@ -1,4 +1,4 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import mixins, ModelViewSet, GenericViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
@@ -8,6 +8,17 @@ from .serializers import ArticleSerializer, DeckSerializer, TagSerializer
 from rooms.signals import article_swiped
 from rest_framework import permissions
 from random import shuffle
+
+
+class GetArticleByUrlViewSet(mixins.RetrieveModelMixin, GenericViewSet):
+    """
+    Get an article by looking up its URL.
+    URL must have all '/' substituted for '_'.
+    """
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    lookup_field = 'url_hash'
 
 
 class ArticleViewSet(ModelViewSet):
@@ -69,7 +80,7 @@ class DeckViewSet(ModelViewSet):
             raise NotFound("No new poll articles.")
         deck = Deck.objects.create(title="Current Affairs")
         deck.articles.set(unseen_poll_articles)
-        data = DeckSerializer(deck).data
+        data = DeckSerializer([deck], many=True).data
         deck.delete()
         return Response(data, status=status.HTTP_200_OK)
 
