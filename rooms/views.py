@@ -13,7 +13,7 @@ from articles.serializers import DeckSerializer
 import random
 
 
-class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
+class SinglePlayer(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
     """
     A ViewSet to handle the basic single-player game mode.
     Create a room by providing a deck ID.
@@ -107,7 +107,7 @@ class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
         return Response(status=status.HTTP_201_CREATED)
 
 
-class GameResultViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class GameResultViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = GameResultSerializer
     permission_classes = (permissions.IsAuthenticated,)
 

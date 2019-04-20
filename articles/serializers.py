@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Article, Deck, Tag
+from .models import Article, Deck, Tag, Domain, DomainTag
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -17,6 +17,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'truth_value',
             'is_poll',
             'url',
+            'url_hash',
             'rating',
             'domain',
             'text',
@@ -66,4 +67,28 @@ class TagSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'thumbnail_url',
+        )
+
+
+class DomainSerializer(serializers.ModelSerializer):
+    domain_tags = serializers.SlugRelatedField(many=True, slug_field='name', queryset=DomainTag.objects.all())
+
+    class Meta:
+        model = Domain
+        fields = (
+            'url',
+            'url_hash',
+            'credibility',
+            'rating',
+            'domain_tags',
+        )
+
+
+class DomainTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DomainTag
+        fields = (
+            'name',
+            'description',
+            'link',
         )

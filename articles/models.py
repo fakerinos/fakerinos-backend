@@ -1,4 +1,5 @@
 from django.db import models
+import hashlib
 import numpy as np
 
 
@@ -19,6 +20,7 @@ class Article(models.Model):
     rating = models.CharField(max_length=50, blank=True)
     domain = models.URLField(blank=True)
     url = models.URLField(max_length=1000, blank=True)
+    url_hash = models.CharField(max_length=1000, blank=True, editable=False)
     thumbnail_url = models.URLField(max_length=1000, blank=True)
     author = models.CharField(max_length=100, blank=True)
     tags = models.ManyToManyField(Tag, related_name='articles', blank=True)
@@ -26,6 +28,11 @@ class Article(models.Model):
     published = models.DateTimeField(null=True, blank=True)
     true_swipers = models.ManyToManyField('accounts.Player', related_name='true_swiped')
     false_swipers = models.ManyToManyField('accounts.Player', related_name='false_swiped')
+
+    def save(self, *args, **kwargs):
+        if self.url is not None:
+            self.url_hash = hashlib.md5(self.url.encode('utf8')).hexdigest()
+        super(Article, self).save(*args, **kwargs)
 
     def __str__(self):
         headline_max_len = 40
@@ -65,3 +72,28 @@ class Deck(models.Model):
 
     # Has a 'starrers' M2M relation in accounts.profile
     # Has a 'finishers' M2M relation in accounts.profile
+
+
+class Domain(models.Model):
+    url = models.URLField(max_length=100, unique=True)
+    url_hash = models.CharField(max_length=100, editable=False, blank=True)
+    credibility = models.PositiveSmallIntegerField(default=5, blank=True)
+    rating = models.CharField(max_length=100, blank=True)
+    domain_tags = models.ManyToManyField('articles.DomainTag', related_name='domains', blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.url is not None:
+            self.url_hash = hashlib.md5(self.url.encode('utf8')).hexdigest()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Domain ({self.url})"
+
+
+class DomainTag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+    link = models.URLField(blank=True)
+
+    def __str__(self):
+        return f"DomainTag ({self.name})"
