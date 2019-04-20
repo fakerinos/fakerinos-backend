@@ -6,12 +6,18 @@ from .models import Article, Deck, Tag
 from .serializers import ArticleSerializer, DeckSerializer, TagSerializer
 from rooms.signals import article_swiped
 from rest_framework import permissions
+from random import shuffle
 
 
 class ArticleViewSet(ModelViewSet):
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     permission_classes = (permissions.DjangoModelPermissions,)
+
+    def get_permissions(self):
+        if self.action and 'swipe' in self.action:
+            return [permissions.IsAuthenticated()]
+        return [permissions.DjangoModelPermissions()]
 
     @action(methods=['post'], detail=True)
     def swipe_true(self, request, *args, **kwargs):
@@ -39,6 +45,17 @@ class DeckViewSet(ModelViewSet):
         tags = user.profile.interests.all()
         tagged_decks = Deck.objects.filter(tags__in=tags).distinct()[:10]
         return tagged_decks
+
+    @action(detail=False)
+    def trending(self, request):
+        decks = self.get_trending_decks(request.user)
+        serializer = self.get_serializer(decks, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def get_trending_decks(self, request):
+        decks = list(Deck.objects.all())
+        shuffle(decks)
+        return decks[:3]
 
     @action(detail=True, methods=['post'])
     def mark_finished(self, request, *args, **kwargs):

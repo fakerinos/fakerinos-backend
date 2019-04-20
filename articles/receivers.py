@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.db.models import signals
 from django.dispatch import receiver
 from .models import Deck, Article, Tag
-from rooms.signals import article_swiped
 import logging
 
 User = get_user_model()
@@ -33,15 +32,3 @@ def update_deck_tags(deck):
         logging.info("Updating tags for deck {}".format(deck.pk))
         new_tags = articles.exclude(tags=None).values_list('tags', flat=True)
         deck.tags.set(new_tags)
-
-
-@receiver(article_swiped)
-def add_swiper_to_article(sender, **kwargs):
-    player = kwargs['player']
-    article = kwargs['article']
-    outcome = kwargs['outcome']
-    if outcome:
-        article.true_swipers.add(player)
-    else:
-        article.false_swipers.add(player)
-    article.save()
