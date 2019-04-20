@@ -17,6 +17,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'truth_value',
             'is_poll',
             'url',
+            'url_hash',
             'rating',
             'domain',
             'text',
@@ -70,13 +71,16 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class DomainSerializer(serializers.ModelSerializer):
+    domain_tags = serializers.SlugRelatedField(many=True, slug_field='name', queryset=DomainTag.objects.all())
+
     class Meta:
         model = Domain
         fields = (
             'url',
+            'url_hash',
             'credibility',
-            'is_satire',
             'rating',
+            'domain_tags',
         )
 
 
