@@ -3,8 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import permissions
 from rest_framework import status
-from .serializers import RoomSerializer, FinishSerializer
-from .models import Room
+from .serializers import RoomSerializer, FinishSerializer, GameResultSerializer
+from .models import Room, GameResult
 from . import exceptions
 from . import signals
 from accounts.models import Player
@@ -80,6 +80,7 @@ class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
         deck = room.deck
         score = request_data['score']
         signals.game_ended.send(self.__class__, room=room, deck=deck, player_scores={player.pk: score})
+        room.delete()
         return Response(status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'])
@@ -97,9 +98,18 @@ class SinglePlayer(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
     @action(methods=['post'], detail=False)
     def fake_a_game(self, request, *args, **kwargs):
         player = Player.objects.order_by('?').first()
-        score = random.randint(-200, 2000)
         deck = Deck.objects.order_by('?').first()
+        score = random.randint(0, 100 * len(deck.articles.all()))
         room = Room.objects.create(deck=deck, max_players=1)
         room.players.add(player)
         signals.game_ended.send(self.__class__, room=room, deck=deck, player_scores={player.pk: score})
+        room.delete()
         return Response(status=status.HTTP_201_CREATED)
+
+
+class GameResultViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    serializer_class = GameResultSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        return self.request.user.player.games.all()

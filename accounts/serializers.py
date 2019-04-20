@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import Profile, Player
-from articles.serializers import DeckSerializer
 from articles.models import Tag, Deck
 
 User = get_user_model()
@@ -29,6 +28,7 @@ class PlayerSerializer(serializers.ModelSerializer):
             'skill_rating',
             'starred_decks',
             'finished_decks',
+            'games',
         )
 
 

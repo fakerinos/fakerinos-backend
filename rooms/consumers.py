@@ -49,14 +49,15 @@ class RoomConsumer(JsonWebsocketConsumer):
 
         path_dict = self.scope['url_route']['kwargs']
         logging.info(path_dict)
-        if path_dict["play_mode"] == "single-player":
-            if 'deck_pk' in path_dict.keys():
-                self.deck_pk = path_dict['deck_pk']
-            if 'tag' in path_dict.keys():
-                self.tag = path_dict['tag']
-                self.create_room(self.tag)
-            else:
-                self.create_room(self.tag)
+        if "play_mode" in path_dict.keys():
+            if path_dict["play_mode"] == "single-player":
+                if 'deck_pk' in path_dict.keys():
+                    self.deck_pk = path_dict['deck_pk']
+                if 'tag' in path_dict.keys():
+                    self.tag = path_dict['tag']
+                    self.create_room(self.tag)
+                else:
+                    self.create_room(self.tag)
         else:
             logging.info("find room :: No room name found OR no subject found")
             # quickmatching method
@@ -203,7 +204,7 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def admin(self, message):
         # only to handle admin messages to self
-        logging.info("\t{} entering admin handler".format(self.user))
+        logging.info("\t{} entering admin handler to do command {}".format(self.user,message))
         getattr(self, message)()
 
     def game_ready(self):
@@ -310,21 +311,32 @@ class RoomConsumer(JsonWebsocketConsumer):
         article_counter = self.user.player.room.article_counter
         # game end
         if article_counter == len(deck.articles.all()):
-            logging.info("GAME ENDED")
-            self.user.player.room.article_counter = 0
-            self.user.player.room.save()
+            if self.user.player.room.article_counter == len(self.user.player.room.deck.articles.all()):
 
-            list_of_scores = self.get_list_of_scores("id")
-            self.send_everyone({
-                "action": "game end",
-                "message": {
-                    "score": list_of_scores,
-                }
-            })
-            if hasattr(self, "hosted_room"):
-                if self.hosted_room.pk == self.user.player.room.pk:
-                    signals.game_ended.send_robust(sender=self.__class__, room=self.user.player.room, deck=deck, player_scores=self.get_list_of_scores("pk"))
+                logging.info("GAME ENDED")
+                self.user.player.room.article_counter = 0
+                self.user.player.room.save()
 
+                if hasattr(self, "hosted_room"):
+                    if self.hosted_room.pk == self.user.player.room.pk:
+                        list_of_scores = self.get_list_of_scores("id")
+                        self.send_everyone({
+                            "action": "game end result",
+                            "message": {
+                                "score": list_of_scores,
+                            }
+                        })
+                        signals.game_ended.send_robust(sender=self.__class__, room=self.user.player.room, deck=deck, player_scores=self.get_list_of_scores("pk"))
+                        async_to_sync(self.channel_layer.group_send)(
+                            self.room_group_name,
+                            {
+                                "type": "receive_json",
+                                "message": {
+                                    "action": "admin",
+                                    "schema": "close",
+                                }
+                            }
+                        )
         else:
             curr_article = Article.objects.get(pk=list_articles[article_counter])
             #logging.info("getting article")
@@ -409,6 +421,21 @@ class RoomConsumer(JsonWebsocketConsumer):
             self.user.player.score = result
 
         self.user.player.game_score += result
+
+        path_dict = self.scope['url_route']['kwargs']
+        if "play_mode" in path_dict.keys():
+            if path_dict["play_mode"] == "single-player":
+                if response == 1:
+                    outcome = True
+                elif response == 0:
+                    outcome = False
+                else:
+                    outcome = None
+                if outcome == None:
+                    pass
+                else:
+                    signals.article_swiped.send_robust(sender=self.__class__, player=self.user.player, article=Article.objects.get(pk=article_pk), outcome=outcome)
+
         list_of_scores = self.get_list_of_scores("id")
         self.send_everyone({
             "action": "result",

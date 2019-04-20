@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from articles.models import Deck, Tag
+from accounts.models import Player
 from .models import Room, GameResult
 import logging
 
@@ -36,3 +37,19 @@ class FinishSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         pass
+
+
+class GameResultSerializer(serializers.ModelSerializer):
+    scores = serializers.SerializerMethodField()
+    deck = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    def get_scores(self, obj):
+        return {Player.objects.get(pk=player_pk).user.username: score for player_pk, score in obj.player_scores.items()}
+
+    class Meta:
+        model = GameResult
+        fields = (
+            'time',
+            'deck',
+            'scores',
+        )
