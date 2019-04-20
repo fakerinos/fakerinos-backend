@@ -71,3 +71,10 @@ class Deck(models.Model):
 
     # Has a 'starrers' M2M relation in accounts.profile
     # Has a 'finishers' M2M relation in accounts.profile
+
+
+class Domain(models.Model):
+    url = models.URLField(max_length=100, unique=True)
+    credibility = models.PositiveSmallIntegerField(default=5, blank=True)
+    is_satire = models.BooleanField(default=False, blank=True)
+    rating = models.CharField(max_length=100, blank=True)
