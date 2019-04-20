@@ -30,6 +30,16 @@ class ArticleViewSet(ModelViewSet):
         article_swiped.send(self.__class__, player=request.user.player, article=self.get_object(), outcome=False)
         return Response(status=status.HTTP_200_OK)
 
+    @action(methods=['post'], detail=False)
+    def remake_decks(self,request, *args, **kwargs):
+        for tag in Tag.objects.all():
+            filtered_articles = Article.objects.filter(tags=tag.pk)[0:5]
+            d = Deck.objects.create()
+            d.title = tag.name
+            for article in filtered_articles:
+                d.articles.add(article.pk)
+            d.save()
+        return Response(DeckSerializer(d).data, status=status.HTTP_200_OK)
 
 class DeckViewSet(ModelViewSet):
     queryset = Deck.objects.all()
