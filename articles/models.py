@@ -79,6 +79,7 @@ class Domain(models.Model):
     credibility = models.PositiveSmallIntegerField(default=5, blank=True)
     is_satire = models.BooleanField(default=False, blank=True)
     rating = models.CharField(max_length=100, blank=True)
+    domain_tags = models.ManyToManyField('articles.DomainTag', related_name='domains')
 
     def save(self, *args, **kwargs):
         if self.url is not None:
@@ -87,3 +88,12 @@ class Domain(models.Model):
 
     def __str__(self):
         return f"Domain ({self.url})"
+
+
+class DomainTag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+    link = models.URLField(blank=True)
+
+    def __str__(self):
+        return f"DomainTag ({self.name})"

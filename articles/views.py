@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from .models import Article, Deck, Tag, Domain
-from .serializers import ArticleSerializer, DeckSerializer, TagSerializer, DomainSerializer
+from .models import Article, Deck, Tag, Domain, DomainTag
+from .serializers import ArticleSerializer, DeckSerializer, TagSerializer, DomainSerializer, DomainTagSerializer
 from rooms.signals import article_swiped
 from rest_framework import permissions
 from random import shuffle
@@ -134,3 +134,13 @@ class DomainViewSet(ModelViewSet):
     serializer_class = DomainSerializer
     permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
     lookup_field = 'url_hash'
+
+
+class DomainTagViewSet(ModelViewSet):
+    """
+    Endpoint for news source Domain information.
+    """
+    queryset = DomainTag.objects.all()
+    serializer_class = DomainTagSerializer
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
+    lookup_field = 'name'
