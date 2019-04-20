@@ -46,10 +46,12 @@ class RoomConsumer(JsonWebsocketConsumer):
         logging.info("\t{} requesting to join a room".format(self.user))
         self.room_pk = None
         self.tag = None
+        self.play_mode = "multi-player"
 
         path_dict = self.scope['url_route']['kwargs']
         if "play_mode" in path_dict.keys():
-            if path_dict["play_mode"] == "single-player":
+            if path_dict["play_mode"] == "single-player" or path_dict["play_mode"] == "crowd-source":
+                self.play_mode = path_dict["play_mode"]
                 if 'deck_pk' in path_dict.keys():
                     self.deck_pk = path_dict['deck_pk']
                 if 'tag' in path_dict.keys():
@@ -93,8 +95,8 @@ class RoomConsumer(JsonWebsocketConsumer):
         )
 
         # signals.player_joined_room.send(sender=self.__class__, room=room, player=self.user.player)
-        self.send_everyone({"action": "admin", "message": "created room %s" % str(room.pk)})
-        self.send_everyone({"action": "admin", "message": "created room .. waiting for other players to join"})
+        # self.send_everyone({"action": "admin", "message": "created room %s" % str(room.pk)})
+        # self.send_everyone({"action": "admin", "message": "created room .. waiting for other players to join"})
         if "play_mode" in self.scope['url_route']['kwargs'].keys():
             if self.scope['url_route']['kwargs']["play_mode"] == "single-player":
                 self.game_ready_list_mode()
@@ -112,7 +114,6 @@ class RoomConsumer(JsonWebsocketConsumer):
                 self.room_group_name,
                 self.channel_name
             )
-            self.send_json({"action":"admin", "message": "Alloted room %s" % str(room.pk)})
             for playa in room.players.all():
                 if playa == self.user.player:
                     pass
@@ -122,24 +123,24 @@ class RoomConsumer(JsonWebsocketConsumer):
                         {
                             "type": "send_json",
                             "action": "opponent",
-                            "message": "{} has joined the room".format(self.user),
+                            "message": "{}".format(self.user),
                         }
                     )
 
             for playa in room.players.all():
                 if playa.pk != self.user.player.pk:
-                    self.send_json({"action": "opponent", "message": "Playing against {}".format(playa.user)})
+                    self.send_json({"action": "opponent", "message": "{}".format(playa.user)})
 
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name,
-                {
-                "type": "receive_json",
-                "message": {
-                    "action": "admin",
-                    "schema": "game_ready",
-                    }
-                }
-            )
+            # async_to_sync(self.channel_layer.group_send)(
+            #     self.room_group_name,
+            #     {
+            #     "type": "receive_json",
+            #     "message": {
+            #         "action": "admin",
+            #         "schema": "game_ready",
+            #         }
+            #     }
+            # )
             # check if game is ready
 
         elif self.user.profile in room.players.all():
@@ -230,7 +231,7 @@ class RoomConsumer(JsonWebsocketConsumer):
     def game_ready_list_mode(self):
         logging.info("\t{} entering Game Handler (returns list)".format(self.user))
         if hasattr(self, "hosted_room"):
-            if self.hosted_room == self.user.player.room and (len(self.user.player.room.players.all()) == self.user.player.room.max_players or self.scope['url_route']['kwargs']['play_mode']=="single-player"):
+            if self.hosted_room == self.user.player.room and (len(self.user.player.room.players.all()) == self.user.player.room.max_players or self.play_mode =="single-player" or self.play_mode == "crowd-source"):
                 self.send_everyone({
                     "action": "admin",
                     "message": "game is ready",
@@ -392,7 +393,7 @@ class RoomConsumer(JsonWebsocketConsumer):
 
         path_dict = self.scope['url_route']['kwargs']
         if "play_mode" in path_dict.keys():
-            if path_dict["play_mode"] == "single-player":
+            if path_dict["play_mode"] == "crowd-source":
                 if response == 1:
                     outcome = True
                 elif response == 0:
