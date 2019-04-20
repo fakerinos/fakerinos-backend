@@ -24,6 +24,7 @@ class Player(models.Model):
     starred_decks = models.ManyToManyField(Deck, related_name='starrers', blank=True)
     score = models.IntegerField(default=0)
     ready = models.BooleanField(default=False)
+    game_score = models.IntegerField(default=0)
 
     def get_score(self, delta: timedelta = None):
         now = timezone.now()

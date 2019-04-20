@@ -104,6 +104,7 @@ def handle_player_joined(sender, **kwargs):
 
 @receiver(article_swiped)
 def add_swiper_to_article(sender, **kwargs):
+    logging.info("Swiper no swiping")
     player = kwargs['player']
     article = kwargs['article']
     outcome = kwargs['outcome']

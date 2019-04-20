@@ -9,8 +9,8 @@ application = ProtocolTypeRouter(
         'websocket': TokenAuthMiddlewareStack(
             URLRouter([
                 path('ws', URLRouter([
-                    path('chat', URLRouter(chat.routing.websocket_urlpatterns)),
-                    path('rooms', URLRouter(rooms.routing.websocket_urlpatterns)),
+                    path('chat/', URLRouter(chat.routing.websocket_urlpatterns)),
+                    path('rooms/', URLRouter(rooms.routing.websocket_urlpatterns)),
                 ]))]
             )
         ),
