@@ -168,7 +168,7 @@ class RoomConsumer(JsonWebsocketConsumer):
                 for player in room.players.all():
                     logging.info("Still inside is {}".format(player.user))
                 room.delete_if_empty()
-            self.close()
+            # self.close()
         except Exception as e:
             logging.exception(e)
 
@@ -495,14 +495,13 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def choose_random_deck(self):
         number_of_decks = len(Deck.objects.all())
-        self.deck_pk = random.randint(1, number_of_decks)
+        list_pks = Deck.objects.all().values_list(flat=True)
+        self.deck_pk = list_pks[random.randint(0,len(list_pks))]
         if Deck.objects.filter(pk=self.deck_pk).exists() and Deck.objects.get(pk=self.deck_pk).articles.all() is not None:
             logging.info("Playing Deck " + str(self.deck_pk))
 
         else:
             logging.info("Deck empty")
-            self.choose_random_deck()
-
     def wait_for_disconnect(self):
         if self.user.player.room is not None:
             self.wait_for_disconnect()
