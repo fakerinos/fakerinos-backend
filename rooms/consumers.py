@@ -162,6 +162,7 @@ class RoomConsumer(JsonWebsocketConsumer):
             room = self.user.player.room
             if user.is_authenticated and Room.objects.filter(pk=room.pk).exists():
                 self.user.player.room.players.remove(self.user.player)
+                self.user.player.game_score = 0
                 self.user.save()
                 logging.info("Room {}".format(room.players.all()))
                 for player in room.players.all():
