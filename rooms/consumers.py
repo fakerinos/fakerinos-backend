@@ -129,7 +129,7 @@ class RoomConsumer(JsonWebsocketConsumer):
 
             for playa in room.players.all():
                 if playa.pk != self.user.player.pk:
-                    self.send_json({"action": "opponent", "message": "Playing against {}".format(playa.user)})
+                    self.send_json({"action": "opponent", "message": "{}".format(playa.user)})
 
             # async_to_sync(self.channel_layer.group_send)(
             #     self.room_group_name,
