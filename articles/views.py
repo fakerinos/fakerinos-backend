@@ -98,6 +98,9 @@ class DeckViewSet(ModelViewSet):
         deck.articles.set(unseen_poll_articles)
         data = DeckSerializer([deck], many=True).data
         deck.delete()
+        serialized_articles = ArticleSerializer(unseen_poll_articles, many=True)
+        for d in data:
+            d['articles'] = serialized_articles.data
         return Response(data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'])
