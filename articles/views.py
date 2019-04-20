@@ -22,6 +22,9 @@ class GetArticleByUrlViewSet(mixins.RetrieveModelMixin, GenericViewSet):
 
 
 class ArticleViewSet(ModelViewSet):
+    """
+    Endpoint for Article information.
+    """
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
 
@@ -42,6 +45,9 @@ class ArticleViewSet(ModelViewSet):
 
 
 class DeckViewSet(ModelViewSet):
+    """
+    Endpoint for collections of Articles.
+    """
     queryset = Deck.objects.all()
     serializer_class = DeckSerializer
     permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
@@ -111,6 +117,9 @@ class DeckViewSet(ModelViewSet):
 
 
 class TagViewSet(ModelViewSet):
+    """
+    Endpoint for Article Tags.
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
@@ -118,6 +127,10 @@ class TagViewSet(ModelViewSet):
 
 
 class DomainViewSet(ModelViewSet):
+    """
+    Endpoint for news source Domain information.
+    """
     queryset = Domain.objects.all()
     serializer_class = DomainSerializer
     permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
+    lookup_field = 'url_hash'

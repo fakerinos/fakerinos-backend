@@ -75,6 +75,15 @@ class Deck(models.Model):
 
 class Domain(models.Model):
     url = models.URLField(max_length=100, unique=True)
+    url_hash = models.CharField(max_length=100, editable=False, blank=True)
     credibility = models.PositiveSmallIntegerField(default=5, blank=True)
     is_satire = models.BooleanField(default=False, blank=True)
     rating = models.CharField(max_length=100, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.url is not None:
+            self.url_hash = self.url.replace('/', '_')
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Domain ({self.url})"
