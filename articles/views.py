@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
-from .models import Article, Deck, Tag, Domain
-from .serializers import ArticleSerializer, DeckSerializer, TagSerializer, DomainSerializer
+from .models import Article, Deck, Tag, Domain, DomainTag
+from .serializers import ArticleSerializer, DeckSerializer, TagSerializer, DomainSerializer, DomainTagSerializer
 from rooms.signals import article_swiped
 from rest_framework import permissions
 from random import shuffle
@@ -22,6 +22,9 @@ class GetArticleByUrlViewSet(mixins.RetrieveModelMixin, GenericViewSet):
 
 
 class ArticleViewSet(ModelViewSet):
+    """
+    Endpoint for Article information.
+    """
     queryset = Article.objects.all()
     serializer_class = ArticleSerializer
 
@@ -42,6 +45,9 @@ class ArticleViewSet(ModelViewSet):
 
 
 class DeckViewSet(ModelViewSet):
+    """
+    Endpoint for collections of Articles.
+    """
     queryset = Deck.objects.all()
     serializer_class = DeckSerializer
     permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
@@ -111,6 +117,9 @@ class DeckViewSet(ModelViewSet):
 
 
 class TagViewSet(ModelViewSet):
+    """
+    Endpoint for Article Tags.
+    """
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
@@ -118,6 +127,20 @@ class TagViewSet(ModelViewSet):
 
 
 class DomainViewSet(ModelViewSet):
+    """
+    Endpoint for news source Domain information.
+    """
     queryset = Domain.objects.all()
     serializer_class = DomainSerializer
     permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
+    lookup_field = 'url_hash'
+
+
+class DomainTagViewSet(ModelViewSet):
+    """
+    Endpoint for news source Domain information.
+    """
+    queryset = DomainTag.objects.all()
+    serializer_class = DomainTagSerializer
+    permission_classes = (permissions.DjangoModelPermissionsOrAnonReadOnly,)
+    lookup_field = 'name'
