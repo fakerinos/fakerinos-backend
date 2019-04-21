@@ -300,17 +300,14 @@ class RoomConsumer(JsonWebsocketConsumer):
             if not players.ready:
                 complete_ready = players.ready
                 break
-        logging.info("JUST TO SEE {} sees {} players waiting".format(self.user, self.user.player.room.players_waiting))
 
         if complete_ready:
             self.user.player.room.article_counter += 1
             self.user.player.room.save()
             self.user.player.room.players_waiting = 0
             self.user.player.room.save()
-            logging.info("CHECK THIS OUT {}".format(room.players_waiting))
             if hasattr(self, "hosted_room"):
                 if self.hosted_room == room:
-                    logging.info("after saving {} waiting".format(self.user.player.room.players_waiting))
                     if is_this_list:
                         if room.article_counter == len(room.deck.articles.all()):
                             self.next_article()
