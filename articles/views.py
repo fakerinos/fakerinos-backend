@@ -8,6 +8,7 @@ from .serializers import ArticleSerializer, DeckSerializer, TagSerializer, Domai
 from rooms.signals import article_swiped
 from rest_framework import permissions
 from random import shuffle
+import logging
 
 
 class GetArticleByUrlViewSet(mixins.RetrieveModelMixin, GenericViewSet):
@@ -42,17 +43,6 @@ class ArticleViewSet(ModelViewSet):
     def swipe_false(self, request, *args, **kwargs):
         article_swiped.send(self.__class__, player=request.user.player, article=self.get_object(), outcome=False)
         return Response(status=status.HTTP_200_OK)
-
-    @action(methods=['post'], detail=False)
-    def remake_decks(self, request, *args, **kwargs):
-        for tag in Tag.objects.all():
-            filtered_articles = Article.objects.filter(tags=tag.pk)[0:5]
-            d = Deck.objects.create()
-            d.title = tag.name
-            for article in filtered_articles:
-                d.articles.add(article.pk)
-            d.save()
-        return Response(DeckSerializer(d).data, status=status.HTTP_200_OK)
 
 
 class DeckViewSet(ModelViewSet):
@@ -129,6 +119,19 @@ class DeckViewSet(ModelViewSet):
         serializer = ArticleSerializer(articles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @action(methods=['post'], detail=False)
+    def remake_decks(self, request, *args, **kwargs):
+        for tag in Tag.objects.all():
+            filtered_articles = Article.objects.filter(tags=tag.pk)
+            for i in range(len(filtered_articles)%5):
+                make_deck = filtered_articles[i:i+4]
+                d = Deck.objects.create()
+                d.title = '{}_{}'.format(tag.name, i)
+                for article in make_deck:
+                    d.articles.add(article.pk)
+                d.save()
+                logging.info(d)
+        return Response(DeckSerializer(d).data, status=status.HTTP_200_OK)
 
 class TagViewSet(ModelViewSet):
     """
