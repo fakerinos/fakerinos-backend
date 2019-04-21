@@ -135,12 +135,10 @@ class RoomConsumer(JsonWebsocketConsumer):
                     self.send_json({"action": "opponent", "message": "{}".format(playa.user)})
 
         elif self.user.profile in room.players.all():
-            #TODO how to handle if user already in room --> will that happen lol
             logging.info("Already in room bro")
 
         elif len(room.players.all()) == room.max_players:
             #logging.info("room full ==> try again")
-            #TODO handle if player wants specific room but full
             self.send_json({
                 "action": "admin",
                 "message": "Room is full... disconnecting from game",
@@ -247,7 +245,7 @@ class RoomConsumer(JsonWebsocketConsumer):
         self.user.player.ready = False
         self.user.player.save()
         room = self.user.player.room
-        room.players_waiting = 1
+        # room.players_waiting = 1
         room.save()
         deck = self.user.player.room.deck
         list_articles = deck.articles.values_list(flat=True)
@@ -302,13 +300,14 @@ class RoomConsumer(JsonWebsocketConsumer):
             if not players.ready:
                 complete_ready = players.ready
                 break
-        # logging.info("JUST TO SEE {} sees {} players waiting".format(self.user, self.user.player.room.players_waiting))
+        logging.info("JUST TO SEE {} sees {} players waiting".format(self.user, self.user.player.room.players_waiting))
 
         if complete_ready:
             self.user.player.room.article_counter += 1
             self.user.player.room.save()
-            self.user.player.room.players_waiting = 10
+            self.user.player.room.players_waiting = 0
             self.user.player.room.save()
+            logging.info("CHECK THIS OUT {}".format(room.players_waiting))
 
             logging.info("after saving {} waiting".format(self.user.player.room.players_waiting))
             if is_this_list:
@@ -320,16 +319,6 @@ class RoomConsumer(JsonWebsocketConsumer):
             else:
                 # check only once
                 self.next_article()
-                # async_to_sync(self.channel_layer.group_send)(
-                #     self.room_group_name,
-                #     {
-                #         "type": "receive_json",
-                #         "message": {
-                #             "action": "admin",
-                #             "schema": "next_article",
-                #         }
-                #     }
-                # )
         else:
             self.send_json({"action": "admin", "message": "Still waiting for all players to answer"})
 
@@ -348,7 +337,6 @@ class RoomConsumer(JsonWebsocketConsumer):
         curr_article = Article.objects.get(pk=list_articles[article_counter])
 
         if response == -1:
-            # logging.info("previously {}".format(room.players_waiting))
             self.user.player.ready = True
             self.user.player.room.players_waiting += 1
             self.user.player.save()
@@ -397,84 +385,6 @@ class RoomConsumer(JsonWebsocketConsumer):
             player.ready = True
             player.save()
             # self.check_ready(room)
-
-    # def timeout(self):
-    #     room = self.user.player.room
-    #     if hasattr(self, "hosted_room"):
-    #         if self.hosted_room == self.user.player.room:
-    #             for player in room.players.all():
-    #                 if player.ready:
-
-
-
-    def game_ready_list_mode(self):
-        logging.info("\t{} entering Game Handler (returns list)".format(self.user))
-        if hasattr(self, "hosted_room"):
-            if self.hosted_room == self.user.player.room and (len(self.user.player.room.players.all()) == self.user.player.room.max_players or self.play_mode =="single-player" or self.play_mode == "crowd-source"):
-                self.send_everyone({
-                    "action": "admin",
-                    "message": "game is ready",
-                })
-                async_to_sync(self.channel_layer.group_send)(
-                    self.room_group_name,
-                    {
-                        "type": "receive_json",
-                        "message": {
-                            "action": "admin",
-                            "schema": "get_article_list",
-                        }
-                    }
-                )
-
-    def respond_specifically_to(self, answers):
-        article_pk = answers["article_pk"]
-        response = answers["answer"]
-        room = self.user.player.room
-        logging.info("User {} responding specifically to Article {}".format(self.user.id, article_pk))
-        article = Article.objects.get(pk=article_pk)
-        result = 0
-        if article.truth_value is not None:
-            if response == article.truth_value:
-                result += 1
-        self.user.player.game_score += result
-        self.send_everyone({
-            "action": "result",
-            "message": {
-                "result": "{} has scored {} points!".format(self.user, result),
-            }
-        })
-        self.user.player.ready = True
-        self.user.player.save()
-        self.check_ready(room, True)
-
-    def get_article_list(self):
-        logging.info("\t{} getting list of articles".format(self.user))
-        deck = self.user.player.room.deck
-        list_articles = deck.articles.values_list(flat=True)
-        article_counter = self.user.player.room.article_counter
-        if article_counter == len(deck.articles.all()):
-            logging.info("GAME ENDED")
-            self.user.player.room.article_counter = 0
-            self.user.player.room.save()
-
-            if hasattr(self, "hosted_room"):
-                if self.hosted_room.pk == self.user.player.room.pk:
-                    list_of_scores = self.get_list_of_scores("id")
-                    self.send_everyone({
-                        "action": "game end",
-                        "message": {
-                            "score": list_of_scores,
-                        }
-                    })
-                    signals.game_ended.send_robust(sender=self.__class__, room=self.user.player.room, deck=deck, player_scores=self.get_list_of_scores("pk"))
-        else:
-            articles = deck.articles.all()
-            serializer = ArticleSerializer(articles, many=True)
-            self.send_json({
-                "action": "list of cards",
-                "message": str(serializer.data)
-                # "message": serializers.serialize("json", ArticleSerializer(article))
-            })
 
 
     def get_list_of_scores(self, id_or_pk):
