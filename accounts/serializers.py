@@ -30,6 +30,9 @@ class PlayerSerializer(serializers.ModelSerializer):
             'finished_decks',
             'games',
         )
+        read_only_fields = (
+            'skill_rating',
+        )
 
 
 class ProfileSerializer(serializers.ModelSerializer):

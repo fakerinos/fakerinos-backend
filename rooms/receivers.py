@@ -66,10 +66,16 @@ def get_multiplayer_sr_updates(players, player_scores, deck, base_reward):
 
 
 def get_single_player_sr_update(player, score, deck, base_reward=50):
+    if deck.articles.count() == 0:
+        return 0
     current_sr = player.skill_rating
     sr_ratio = (current_sr - 500) / 1000
     score_ratio = (score / (100 * deck.articles.count())) - 0.5  # -0.5 - 0.5
     reward = base_reward * ((1.2 * score_ratio) - (0.8 * sr_ratio))
+    if reward + current_sr > 1000:
+        reward = 1000 - current_sr
+    elif reward + current_sr < 0:
+        reward = -current_sr
     return reward
 
 

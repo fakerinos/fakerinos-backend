@@ -17,7 +17,6 @@ class Player(models.Model):
     user = models.OneToOneField(User, primary_key=True, editable=False, on_delete=models.CASCADE)
     room = models.ForeignKey('rooms.Room', on_delete=models.SET_NULL, related_name='players', editable=False, null=True)
     skill_rating = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(1000)],
-                                       editable=False,
                                        default=500)
     rank = models.PositiveIntegerField(null=True, editable=False)
     finished_decks = models.ManyToManyField(Deck, related_name='finishers', editable=False, blank=True)
@@ -30,6 +29,7 @@ class Player(models.Model):
         now = timezone.now()
         beginning_of_time = timezone.datetime.fromtimestamp(0)
         start_time = beginning_of_time if delta is None else now - delta
+        logging.info(f"Getting scores starting from {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
         games = self.games.all() if delta is None else self.games.filter(time__gte=start_time)
         return sum([game.player_scores[self.pk] for game in games])
 
