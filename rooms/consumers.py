@@ -224,8 +224,6 @@ class RoomConsumer(JsonWebsocketConsumer):
                 if player.ready is not True:
                     letsgo = False
                     break
-        logging.info("letsgo {}".format(letsgo))
-
         if letsgo:
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
@@ -255,8 +253,8 @@ class RoomConsumer(JsonWebsocketConsumer):
     def next_article(self):
         logging.info("\t{} getting article".format(self.user))
         player = self.user.player
-        player.ready = False
-        player.save()
+        self.user.player.ready = False
+        self.user.player.save()
         room = self.user.player.room
         room.players_waiting = 1
         room.save()
@@ -266,29 +264,29 @@ class RoomConsumer(JsonWebsocketConsumer):
         # game end
         logging.info("{} is seeing {} vs fixed {}".format(self.user, article_counter, len(deck.articles.all())))
         if article_counter == len(deck.articles.all()):
-            # if hasattr(self, "hosted_room"):
-            #     if self.hosted_room.pk == room.pk:
-            logging.info("GAME ENDED")
-            room.article_counter = 0
-            room.save()
-            list_of_scores = self.get_list_of_scores("id")
-            self.send_everyone({
-                "action": "game end result",
-                "message": {
-                    "score": list_of_scores,
-                }
-            })
-            signals.game_ended.send_robust(sender=self.__class__, room=room, deck=deck, player_scores=self.get_list_of_scores("pk"))
-            async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name,
-                {
-                    "type": "receive_json",
-                    "message": {
-                        "action": "admin",
-                        "schema": "close",
-                    }
-                }
-            )
+            if hasattr(self, "hosted_room"):
+                if self.hosted_room.pk == room.pk:
+                    logging.info("GAME ENDED")
+                    room.article_counter = 0
+                    room.save()
+                    list_of_scores = self.get_list_of_scores("id")
+                    self.send_everyone({
+                        "action": "game end result",
+                        "message": {
+                            "score": list_of_scores,
+                        }
+                    })
+                    signals.game_ended.send_robust(sender=self.__class__, room=room, deck=deck, player_scores=self.get_list_of_scores("pk"))
+                    async_to_sync(self.channel_layer.group_send)(
+                        self.room_group_name,
+                        {
+                            "type": "receive_json",
+                            "message": {
+                                "action": "admin",
+                                "schema": "close",
+                            }
+                        }
+                    )
         else:
             curr_article = Article.objects.get(pk=list_articles[article_counter])
             # self.send_json({
@@ -313,31 +311,34 @@ class RoomConsumer(JsonWebsocketConsumer):
             if not players.ready:
                 complete_ready = players.ready
                 break
+        # logging.info("JUST TO SEE {} sees {} players waiting".format(self.user, self.user.player.room.players_waiting))
 
-        if complete_ready and room.players_waiting == 1:
-            article_counter = room.article_counter
-            article_counter += 1
-            room.players_waiting = 0
-            room.save()
+        if complete_ready:
+            self.user.player.room.article_counter += 1
+            self.user.player.room.save()
+            self.user.player.room.players_waiting = 10
+            self.user.player.room.save()
+
+            logging.info("after saving {} waiting".format(self.user.player.room.players_waiting))
             if is_this_list:
                 if room.article_counter == len(room.deck.articles.all()):
                     self.next_article()
-
                 else:
                     player.ready = False
                     player.save()
             else:
                 # check only once
-                async_to_sync(self.channel_layer.group_send)(
-                    self.room_group_name,
-                    {
-                        "type": "receive_json",
-                        "message": {
-                            "action": "admin",
-                            "schema": "next_article",
-                        }
-                    }
-                )
+                self.next_article()
+                # async_to_sync(self.channel_layer.group_send)(
+                #     self.room_group_name,
+                #     {
+                #         "type": "receive_json",
+                #         "message": {
+                #             "action": "admin",
+                #             "schema": "next_article",
+                #         }
+                #     }
+                # )
         else:
             self.send_json({"action": "admin", "message": "Still waiting for all players to answer"})
 
@@ -356,12 +357,14 @@ class RoomConsumer(JsonWebsocketConsumer):
         curr_article = Article.objects.get(pk=list_articles[article_counter])
 
         if response == -1:
-            logging.info("previously {}".format(room.players_waiting)   )
-            player.ready = True
-            player.save()
+            # logging.info("previously {}".format(room.players_waiting))
+            self.user.player.ready = True
+            self.user.player.room.players_waiting += 1
+            self.user.player.save()
+            self.user.player.room.save()
             self.check_ready(room)
 
-        if not player.ready:
+        elif not player.ready:
             if response != -1:
                 if response == curr_article.truth_value:
                     result = 1
