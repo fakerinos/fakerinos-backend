@@ -11,6 +11,7 @@ class Room(models.Model):
     status = models.CharField(max_length=128, default='NEW', editable=False, blank=True)
     deck = models.ForeignKey('articles.Deck', on_delete=models.PROTECT, null=True,related_name="rooms")
     article_counter = models.IntegerField(default=0)
+    players_waiting = models.IntegerField(default=0)
 
     def __str__(self):
         players = [p.user.username for p in self.players.all()]

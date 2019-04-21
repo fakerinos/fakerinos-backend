@@ -118,6 +118,9 @@ class RoomConsumer(JsonWebsocketConsumer):
             self.user.player.ready = False
             self.user.player.game_score = 0
             self.user.player.save()
+            room.players_waiting = 0
+            room.article_counter = 0
+            room.save()
             self.room_group_name = 'room_%s' % room.pk
             async_to_sync(self.channel_layer.group_add)(
                 self.room_group_name,
@@ -255,10 +258,13 @@ class RoomConsumer(JsonWebsocketConsumer):
         player.ready = False
         player.save()
         room = player.room
+        room.players_waiting = 1
+        room.save()
         deck = self.user.player.room.deck
         list_articles = deck.articles.values_list(flat=True)
         article_counter = self.user.player.room.article_counter
         # game end
+        logging.info("{} vs fixed {}".format(article_counter, len(deck.articles.all())))
         if article_counter == len(deck.articles.all()):
             if hasattr(self, "hosted_room"):
                 if self.hosted_room.pk == room.pk:
@@ -284,7 +290,6 @@ class RoomConsumer(JsonWebsocketConsumer):
                         }
                     )
         else:
-            logging.info("CURRENTLY ????")
             curr_article = Article.objects.get(pk=list_articles[article_counter])
             # self.send_json({
             #     "action": "card",
@@ -298,32 +303,47 @@ class RoomConsumer(JsonWebsocketConsumer):
             self.send_json(serialized_data)
 
     def check_ready(self, room, is_this_list=False):
-        # logging.info("\t{} checking if everyone is ready".format(self.user))
-        complete_ready = False
-        for player in room.players.all():
-            if not player.ready:
-                complete_ready = player.ready
+        logging.info("\t{} checking if everyone is ready".format(self.user))
+        complete_ready = True
+
+        player = self.user.player
+        room = player.room
+
+        for players in room.players.all():
+            if not players.ready:
+                complete_ready = players.ready
                 break
 
-        if complete_ready:
+        if complete_ready and room.players_waiting == 1:
+            room.article_counter += 1
+            room.players_waiting = 0
+            room.save()
             if is_this_list:
-                self.user.player.room.article_counter += 1
-                if self.user.player.room.article_counter == len(self.user.player.room.deck.articles.all()):
+                if room.article_counter == len(room.deck.articles.all()):
+
                     self.next_article()
 
                 else:
-                    self.user.player.ready = False
-                    self.user.player.room.save()
+                    player.ready = False
+                    player.save()
             else:
-                self.user.player.room.article_counter += 1
-                self.user.player.room.save()
-                self.next_article()
+                # check only once
+                async_to_sync(self.channel_layer.group_send)(
+                    self.room_group_name,
+                    {
+                        "type": "receive_json",
+                        "message": {
+                            "action": "admin",
+                            "schema": "next_article",
+                        }
+                    }
+                )
         else:
-            #TODO why never here
             self.send_json({"action": "admin", "message": "Still waiting for all players to answer"})
 
     def respond(self, message):
         logging.info("\t{} responding".format(self.user))
+        logging.info(message)
         article_pk = message["article_pk"]
         response = message["answer"]
         # 0 for false 1 for true
@@ -336,56 +356,53 @@ class RoomConsumer(JsonWebsocketConsumer):
         curr_article = Article.objects.get(pk=list_articles[article_counter])
 
         if response == -1:
-            pass
-        else:
-            if response == curr_article.truth_value:
-                result = 1
-            elif response != curr_article.truth_value:
-                result = 0
+            logging.info("previously {}".format(room.players_waiting)   )
+            player.ready = True
+            player.save()
+            self.check_ready(room)
 
-            if hasattr(player, "score"):
-                player.score += result
-            else:
-                player.score = result
+        if not player.ready:
+            if response != -1:
+                if response == curr_article.truth_value:
+                    result = 1
+                player.game_score += result
 
-            player.game_score += result
-
-            for playa in room.players.all():
-                if playa == self.user.player:
-                    pass
-                else:
-                    async_to_sync(self.channel_layer.group_send)(
-                        'user_{}'.format(playa.pk),
-                        {
-                            "type": "send_json",
-                            "action": "result",
-                            "message": {
-                                "opponent": result,
-                                "explanation": curr_article.explanation,
-                            }
-                        }
-                    )
-
-            for playa in room.players.all():
-                if playa.pk != self.user.player.pk:
-                    self.send_json({"action": "result", "self": result})
-
-            path_dict = self.scope['url_route']['kwargs']
-            if "play_mode" in path_dict.keys():
-                if path_dict["play_mode"] == "crowd-source":
-                    if response == 1:
-                        outcome = True
-                    elif response == 0:
-                        outcome = False
-                    else:
-                        outcome = None
-                    if outcome is None:
+                for playa in room.players.all():
+                    if playa == self.user.player:
                         pass
                     else:
-                        signals.article_swiped.send_robust(sender=self.__class__, player=player, article=Article.objects.get(pk=article_pk), outcome=outcome)
-        player.ready = True
-        player.save()
-        self.check_ready(room)
+                        async_to_sync(self.channel_layer.group_send)(
+                            'user_{}'.format(playa.pk),
+                            {
+                                "type": "send_json",
+                                "action": "result",
+                                "message": {
+                                    "opponent": result,
+                                    "explanation": curr_article.explanation,
+                                }
+                            }
+                        )
+
+                for playa in room.players.all():
+                    if playa.pk != self.user.player.pk:
+                        self.send_json({"action": "result", "self": result, "explanation": curr_article.explanation})
+
+                path_dict = self.scope['url_route']['kwargs']
+                if "play_mode" in path_dict.keys():
+                    if path_dict["play_mode"] == "crowd-source":
+                        if response == 1:
+                            outcome = True
+                        elif response == 0:
+                            outcome = False
+                        else:
+                            outcome = None
+                        if outcome is None:
+                            pass
+                        else:
+                            signals.article_swiped.send_robust(sender=self.__class__, player=player, article=Article.objects.get(pk=article_pk), outcome=outcome)
+            player.ready = True
+            player.save()
+            # self.check_ready(room)
 
     # def timeout(self):
     #     room = self.user.player.room
@@ -425,11 +442,6 @@ class RoomConsumer(JsonWebsocketConsumer):
         if article.truth_value is not None:
             if response == article.truth_value:
                 result += 1
-        if hasattr(self.user.player, "score"):
-            self.user.player.score += result
-        else:
-            logging.info("Something is wrong with player score values")
-            self.user.player.score = result
         self.user.player.game_score += result
         self.send_everyone({
             "action": "result",
