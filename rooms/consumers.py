@@ -4,18 +4,9 @@ from .models import Room, GameResult
 from articles.models import Deck, Article
 import logging
 import json
-from django.core import serializers
 import random
 from articles.serializers import ArticleSerializer,DeckSerializer,TagSerializer
-from rest_framework.renderers import JSONRenderer
-import time
-from channels.exceptions import (
-    AcceptConnection,
-    DenyConnection,
-    InvalidChannelLayerError,
-    StopConsumer,
-)
-import asyncio
+
 from . import signals
 
 
@@ -484,7 +475,6 @@ class RoomConsumer(JsonWebsocketConsumer):
                 "message": str(serializer.data)
                 # "message": serializers.serialize("json", ArticleSerializer(article))
             })
-
 
 
     def get_list_of_scores(self, id_or_pk):
