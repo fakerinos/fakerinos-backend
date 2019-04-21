@@ -252,6 +252,8 @@ class RoomConsumer(JsonWebsocketConsumer):
     def next_article(self):
         logging.info("\t{} getting article".format(self.user))
         player = self.user.player
+        player.ready = False
+        player.save()
         room = player.room
         deck = self.user.player.room.deck
         list_articles = deck.articles.values_list(flat=True)
@@ -297,7 +299,7 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def check_ready(self, room, is_this_list=False):
         # logging.info("\t{} checking if everyone is ready".format(self.user))
-        complete_ready = True
+        complete_ready = False
         for player in room.players.all():
             if not player.ready:
                 complete_ready = player.ready
