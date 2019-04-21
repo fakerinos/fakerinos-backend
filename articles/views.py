@@ -37,12 +37,14 @@ class ArticleViewSet(ModelViewSet):
     @action(methods=['post'], detail=True)
     def swipe_true(self, request, *args, **kwargs):
         article_swiped.send(self.__class__, player=request.user.player, article=self.get_object(), outcome=True)
-        return Response(status=status.HTTP_200_OK)
+        article = self.get_object()
+        return Response(self.get_serializer(article).data, status=status.HTTP_200_OK)
 
     @action(methods=['post'], detail=True)
     def swipe_false(self, request, *args, **kwargs):
         article_swiped.send(self.__class__, player=request.user.player, article=self.get_object(), outcome=False)
-        return Response(status=status.HTTP_200_OK)
+        article = self.get_object()
+        return Response(self.get_serializer(article).data, status=status.HTTP_200_OK)
 
 
 class DeckViewSet(ModelViewSet):
