@@ -257,7 +257,7 @@ class RoomConsumer(JsonWebsocketConsumer):
         player = self.user.player
         player.ready = False
         player.save()
-        room = player.room
+        room = self.user.player.room
         room.players_waiting = 1
         room.save()
         deck = self.user.player.room.deck
@@ -307,7 +307,7 @@ class RoomConsumer(JsonWebsocketConsumer):
         complete_ready = True
 
         player = self.user.player
-        room = player.room
+        room = self.user.player.room
 
         for players in room.players.all():
             if not players.ready:
@@ -315,8 +315,8 @@ class RoomConsumer(JsonWebsocketConsumer):
                 break
 
         if complete_ready and room.players_waiting == 1:
-
-            room.article_counter += 1
+            article_counter = room.article_counter
+            article_counter += 1
             room.players_waiting = 0
             room.save()
             if is_this_list:
