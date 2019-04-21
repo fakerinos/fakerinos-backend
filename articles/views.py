@@ -83,7 +83,8 @@ class DeckViewSet(ModelViewSet):
         true_swiped = request.user.player.true_swiped.all()
         false_swiped = request.user.player.false_swiped.all()
         seen_articles = true_swiped | false_swiped
-        unseen_poll_articles = poll_articles.difference(seen_articles)[:5]
+        # unseen_poll_articles = poll_articles.difference(seen_articles)[:5]
+        unseen_poll_articles = poll_articles
         if not unseen_poll_articles.count():
             raise NotFound("No new poll articles.")
         deck = Deck.objects.create(title="Current Affairs")
