@@ -308,17 +308,27 @@ class RoomConsumer(JsonWebsocketConsumer):
             self.user.player.room.players_waiting = 0
             self.user.player.room.save()
             logging.info("CHECK THIS OUT {}".format(room.players_waiting))
-
-            logging.info("after saving {} waiting".format(self.user.player.room.players_waiting))
-            if is_this_list:
-                if room.article_counter == len(room.deck.articles.all()):
-                    self.next_article()
-                else:
-                    player.ready = False
-                    player.save()
-            else:
-                # check only once
-                self.next_article()
+            if hasattr(self, "hosted_room"):
+                if self.hosted_room == room:
+                    logging.info("after saving {} waiting".format(self.user.player.room.players_waiting))
+                    if is_this_list:
+                        if room.article_counter == len(room.deck.articles.all()):
+                            self.next_article()
+                        else:
+                            player.ready = False
+                            player.save()
+                    else:
+                        # check only once
+                        async_to_sync(self.channel_layer.group_send)(
+                            self.room_group_name,
+                            {
+                                "type": "receive_json",
+                                "message": {
+                                    "action": "admin",
+                                    "schema": "next_article",
+                                }
+                            }
+                        )
         else:
             self.send_json({"action": "admin", "message": "Still waiting for all players to answer"})
 
