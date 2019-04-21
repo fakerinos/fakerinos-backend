@@ -9,7 +9,7 @@ import json
 class Room(models.Model):
     max_players = models.IntegerField(default=2, editable=False)
     status = models.CharField(max_length=128, default='NEW', editable=False, blank=True)
-    deck = models.OneToOneField('articles.Deck', on_delete=models.PROTECT, null=True)
+    deck = models.ForeignKey('articles.Deck', on_delete=models.PROTECT, null=True,related_name="rooms")
     article_counter = models.IntegerField(default=0)
 
     def __str__(self):
