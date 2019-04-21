@@ -30,6 +30,7 @@ class Player(models.Model):
         now = timezone.now()
         beginning_of_time = timezone.datetime.fromtimestamp(0)
         start_time = beginning_of_time if delta is None else now - delta
+        logging.info(f"Getting scores starting from {start_time.strftime('%Y-%m-%d %H:%M:%S')}")
         games = self.games.all() if delta is None else self.games.filter(time__gte=start_time)
         return sum([game.player_scores[self.pk] for game in games])
 
