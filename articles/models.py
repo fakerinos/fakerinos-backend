@@ -6,7 +6,7 @@ import numpy as np
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(blank=True)
-    thumbnail_url = models.ImageField(blank=True, null=True)
+    thumbnail_url = models.ImageField(blank=True, null=True, upload_to='tag_thumbnails')
 
     def __str__(self):
         return f"Tag ({self.name})"
@@ -64,7 +64,7 @@ class Deck(models.Model):
     title = models.CharField(max_length=100, unique=True)
     articles = models.ManyToManyField(Article, related_name='decks')
     description = models.CharField(max_length=200, blank=True)
-    thumbnail_url = models.URLField(max_length=500, blank=True)
+    thumbnail_url = models.ImageField(null=True, blank=True, upload_to='deck_thumbnails')
     tags = models.ManyToManyField(Tag, related_name='tags', blank=True, editable=False)
 
     def __str__(self):
