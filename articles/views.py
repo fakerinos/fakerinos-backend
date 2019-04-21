@@ -129,6 +129,7 @@ class DeckViewSet(ModelViewSet):
                 d.title = '{}_{}'.format(tag.name, i)
                 for article in make_deck:
                     d.articles.add(article.pk)
+                d.description = tag.name
                 d.save()
                 logging.info(d)
         return Response(DeckSerializer(d).data, status=status.HTTP_200_OK)
