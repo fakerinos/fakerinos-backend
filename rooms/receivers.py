@@ -114,9 +114,9 @@ def add_swiper_to_article(sender, **kwargs):
     player = kwargs['player']
     article = kwargs['article']
     outcome = kwargs['outcome']
-    if player in article.true_swipers:
+    if player in article.true_swipers.all():
         article.true_swipers.remove(player)
-    if player in article.false_swipers:
+    if player in article.false_swipers.all():
         article.false_swipers.remove(player)
     if outcome:
         article.true_swipers.add(player)
