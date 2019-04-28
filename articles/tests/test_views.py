@@ -169,3 +169,16 @@ class TestDeckRecommendations(ModelViewSetHelpersMixin, APITestCase):
         deck.articles.add(article)
         response = self.client.post(reverse('deck-remake-decks'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_swipe_article(self):
+        self.client.force_login(self.user)
+        article1 = mixer.blend(Article)
+        article2 = mixer.blend(Article)
+        response = self.client.post(reverse('article-swipe-true', kwargs={'pk': article1.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(reverse('article-swipe-false', kwargs={'pk': article1.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(reverse('article-swipe-false', kwargs={'pk': article2.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(reverse('article-swipe-true', kwargs={'pk': article2.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
