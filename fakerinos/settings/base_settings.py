@@ -16,7 +16,6 @@ AUTH_USER_MODEL = 'accounts.User'
 INSTALLED_APPS = [
     # Apps
     'fakerinos',
-    'chat',
     'leaderboard',
     'accounts',
     'articles',
