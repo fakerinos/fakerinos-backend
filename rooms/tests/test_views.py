@@ -7,7 +7,6 @@ from mixer.backend.django import mixer
 from articles.models import Deck
 from ..models import Room
 from ..serializers import RoomSerializer
-
 User = get_user_model()
 
 

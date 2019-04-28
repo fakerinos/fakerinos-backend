@@ -37,12 +37,14 @@ class ArticleViewSet(ModelViewSet):
     @action(methods=['post'], detail=True)
     def swipe_true(self, request, *args, **kwargs):
         article_swiped.send(self.__class__, player=request.user.player, article=self.get_object(), outcome=True)
-        return Response(status=status.HTTP_200_OK)
+        article = self.get_object()
+        return Response(self.get_serializer(article).data, status=status.HTTP_200_OK)
 
     @action(methods=['post'], detail=True)
     def swipe_false(self, request, *args, **kwargs):
         article_swiped.send(self.__class__, player=request.user.player, article=self.get_object(), outcome=False)
-        return Response(status=status.HTTP_200_OK)
+        article = self.get_object()
+        return Response(self.get_serializer(article).data, status=status.HTTP_200_OK)
 
 
 class DeckViewSet(ModelViewSet):
@@ -81,7 +83,8 @@ class DeckViewSet(ModelViewSet):
         true_swiped = request.user.player.true_swiped.all()
         false_swiped = request.user.player.false_swiped.all()
         seen_articles = true_swiped | false_swiped
-        unseen_poll_articles = poll_articles.difference(seen_articles)[:5]
+        # unseen_poll_articles = poll_articles.difference(seen_articles)[:5]
+        unseen_poll_articles = poll_articles
         if not unseen_poll_articles.count():
             raise NotFound("No new poll articles.")
         deck = Deck.objects.create(title="Current Affairs")

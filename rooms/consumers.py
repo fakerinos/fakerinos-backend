@@ -12,9 +12,13 @@ from . import signals
 
 class RoomConsumer(JsonWebsocketConsumer):
     def websocket_connect(self, message):
+        print(self.scope)
+        logging.info(self.scope)
         try:
             self.user = self.scope['user']
-        except:
+        except Exception as e:
+            print(e)
+            logging.exception(e)
             message = "Connection error :: either you are not logged in or cannot provide authentication"
             self.send_json({
                 "action": "admin",
@@ -146,7 +150,7 @@ class RoomConsumer(JsonWebsocketConsumer):
             self.close()
 
     def leave_room(self):
-        logging.info("\tUser {} leaving room {}".format(self.user, self.user.player.room))
+        # logging.info("\tUser {} leaving room {}".format(self.user, self.user.player.room))
         try:
             user = self.scope['user']
             room = self.user.player.room
