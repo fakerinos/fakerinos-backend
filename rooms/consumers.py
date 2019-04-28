@@ -12,8 +12,6 @@ from . import signals
 
 class RoomConsumer(JsonWebsocketConsumer):
     def websocket_connect(self, message):
-        print(self.scope)
-        logging.info(self.scope)
         try:
             self.user = self.scope['user']
         except Exception as e:

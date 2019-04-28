@@ -48,7 +48,7 @@ class TestWebSockets:
             })
             await communicator.disconnect()
         except Exception as e:
-            print("whoops")
+            pass
 
 
     async def test_connect(self):
@@ -58,10 +58,9 @@ class TestWebSockets:
         communicator = WebsocketCommunicator(application, '/ws/rooms/', headers=headers)
         try:
             connected, subprotocol = await communicator.connect()
-            print("notice me {}".format(connected))
             assert connected
         except Exception as e:
-            print("whoops")
+            pass
         await communicator.disconnect()
 
     async def test_receive(self):
@@ -72,5 +71,5 @@ class TestWebSockets:
         try:
             await communicator.receive_json_from()
         except Exception as e:
-            print("whoops")
+            pass
         await communicator.disconnect()
