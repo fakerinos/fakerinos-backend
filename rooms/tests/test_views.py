@@ -7,6 +7,7 @@ from mixer.backend.django import mixer
 from articles.models import Deck
 from ..models import Room
 from ..serializers import RoomSerializer
+
 User = get_user_model()
 
 
@@ -150,5 +151,24 @@ class TestSinglePlayer(APITestCase):
     def test_admin_partial_update_room(self):
         response = self.partial_update_room(self.room.pk, {'max_players': 100}, user=self.admin)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    # endregion
+
+    # region Convenience Methods
+    def test_fake_a_game(self):
+        self.client.force_login(self.admin)
+        self.client.post(reverse('single-player-fake-a-game'))
+
+    def test_game_sequence(self):
+        self.client.force_login(self.admin)
+        deck = mixer.blend(Deck)
+        self.client.post(self.list_endpoint, data={'deck': deck.pk})
+        self.client.post(reverse('single-player-finish'), data={'score': deck.articles.count() * 100})
+
+    def test_game_leave(self):
+        self.client.force_login(self.admin)
+        deck = mixer.blend(Deck)
+        self.client.post(self.list_endpoint, data={'deck': deck.pk})
+        self.client.post(reverse('single-player-leave'))
 
     # endregion
