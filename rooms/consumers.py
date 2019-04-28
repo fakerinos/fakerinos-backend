@@ -243,7 +243,6 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def next_article(self):
         logging.info("\t{} getting article".format(self.user))
-        player = self.user.player
         self.user.player.ready = False
         self.user.player.save()
         room = self.user.player.room
@@ -280,18 +279,13 @@ class RoomConsumer(JsonWebsocketConsumer):
                     )
         else:
             curr_article = Article.objects.get(pk=list_articles[article_counter])
-            # self.send_json({
-            #     "action": "card",
-            #     "message": str(ArticleSerializer(curr_article).data)
-            #     # "message": serializers.serialize("json", ArticleSerializer(article))
-            # })
             serializer = ArticleSerializer(curr_article)
             serialized_data = serializer.data
             serialized_data["action"] = "card"
             # logging.info(serialized_data)
             self.send_json(serialized_data)
 
-    def check_ready(self, room, is_this_list=False):
+    def check_ready(self, is_this_list=False):
         logging.info("\t{} checking if everyone is ready".format(self.user))
         complete_ready = True
 
