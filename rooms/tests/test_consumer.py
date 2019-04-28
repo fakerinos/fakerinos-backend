@@ -23,25 +23,6 @@ TEST_CHANNEL_LAYERS = {
     },
 }
 
-# @database_sync_to_async
-# def create_user(
-#     *,
-#     username='testingUser',
-#     password='pAssw0rd!',
-#     group='rider'
-# ):
-#     # Create user.
-#     user = get_user_model().objects.create_user(
-#         username=username,
-#         password=password
-#     )
-#
-#     # Create user group.
-#     user_group, _ = Group.objects.get_or_create(name=group)
-#     user.groups.add(user_group)
-#     user.save()
-#     return user
-
 @pytest.mark.asyncio
 @pytest.mark.django_db(transaction=True)
 class TestWebSockets:
@@ -95,111 +76,33 @@ class TestWebSockets:
             pass
         await communicator.disconnect()
 
-    async def test_create_room(self,settings):
-        settings.CHANNEL_LAYERS = TEST_CHANNEL_LAYERS
-        room = mixer.blend(Room)
-        tag = mixer.blend(Tag)
-        communicator, user = await self.auth_user()
-        user.player.room = room
-        try:
-            await communicator.send_json_to(
-                {
-                    "type": "receive_json",
-                    "message": {
-                        "action": "create_room",
-                        "schema": "",
-                    }
-                })
-        except Exception as e:
-            pass
-        await communicator.disconnect()
-
-    async def test_next_article(self, settings):
-        settings.CHANNEL_LAYERS = TEST_CHANNEL_LAYERS
-        room = mixer.blend(Room)
-        tag = mixer.blend(Tag)
-        communicator, user = await self.auth_user()
-        user.player.room = room
-        try:
-            await communicator.send_json_to(
-                {
-                    "type": "receive_json",
-                    "message": {
-                        "action": "admin",
-                        "schema": "next_article",
-                    }
-                })
-        except Exception as e:
-            pass
-        await communicator.disconnect()
-
-    async def test_game_ready(self, settings):
-        settings.CHANNEL_LAYERS = TEST_CHANNEL_LAYERS
-        room = mixer.blend(Room)
-        tag = mixer.blend(Tag)
-        communicator, user = await self.auth_user()
-        user.player.room = room
-        try:
-            await communicator.send_json_to(
-                {
-                    "type": "receive_json",
-                    "message": {
-                        "action": "admin",
-                        "schema": "game_ready",
-                    }
-
-                })
-        except Exception as e:
-            pass
-        await communicator.disconnect()
-
-    async def test_respond(self, settings):
-        settings.CHANNEL_LAYERS = TEST_CHANNEL_LAYERS
-        room = mixer.blend(Room)
-        tag = mixer.blend(Tag)
-        communicator, user = await self.auth_user()
-        user.player.room = room
-        try:
-            await communicator.send_json_to(
-                {
-                    "type": "receive_json",
-                    "message": {
-                        "action": "respond",
-                        "schema": {
-                            "article_pk": 2267,
-                            "answer": 0,
+        async def test_create_room(self,settings):
+            settings.CHANNEL_LAYERS = TEST_CHANNEL_LAYERS
+            room = mixer.blend(Room)
+            tag = mixer.blend(Tag)
+            communicator, user = await self.auth_user()
+            user.player.room = room
+            try:
+                await communicator.send_json_to(
+                    {
+                        "type": "receive_json",
+                        "message": {
+                            "action": "create_room",
+                            "schema": "",
                         }
-                    }
-                })
-        except Exception as e:
-            pass
-        await communicator.disconnect()
-
-    async def test_check_ready(self, settings):
-        settings.CHANNEL_LAYERS = TEST_CHANNEL_LAYERS
-        room = mixer.blend(Room)
-        tag = mixer.blend(Tag)
-        communicator, user = await self.auth_user()
-        user.player.room = room
-        try:
-            await communicator.send_json_to(
-                {
-                    "type": "receive_json",
-                    "message": {
-                        "action": "admin",
-                        "schema": "check_ready",
-                    }
-                })
-        except Exception as e:
-            pass
-        await communicator.disconnect()
+                    })
+            except Exception as e:
+                pass
+            await communicator.disconnect()
 
     async def test_leaving(self, settings):
         settings.CHANNEL_LAYERS = TEST_CHANNEL_LAYERS
         room = mixer.blend(Room)
-        tag = mixer.blend(Tag)
+        room.save()
         communicator, user = await self.auth_user()
         user.player.room = room
+        user.save()
+        room.save()
         try:
             await communicator.send_json_to(
                 {
@@ -239,87 +142,79 @@ class TestWebSockets:
         settings.CHANNEL_LAYERS = TEST_CHANNEL_LAYERS
 
         room = mixer.blend(Room)
+        room.save()
         tag = mixer.blend(Tag)
 
         communicator, user = await self.auth_user()
         user.player.room = room
-
-        await communicator.send_json_to(
-            {
-                "type": "receive_json",
-                "message": {
-                    "action": "admin",
-                    "schema": "request_to_join"
-                }
-            })
-
-        await communicator.send_json_to(
-            {
-                "type": "receive_json",
-                "message": {
-                    "action": "create_room",
-                    "schema": "",
-                }
-            })
-        await communicator.send_json_to(
-            {
-                "type": "receive_json",
-                "message": {
-                    "action": "admin",
-                    "schema": "next_article",
-                }
-            })
-        await communicator.send_json_to(
-            {
-                "type": "receive_json",
-                "message": {
-                    "action": "admin",
-                    "schema": "game_ready",
-                }
-
-            })
-
-        await communicator.send_json_to(
-            {
-                "type": "receive_json",
-                "message": {
-                    "action": "respond",
-                    "schema": {
-                        "article_pk": 2267,
-                        "answer": 0,
+        user.save()
+        room.save()
+        try:
+            await communicator.send_json_to(
+                {
+                    "type": "receive_json",
+                    "message": {
+                        "action": "admin",
+                        "schema": "request_to_join"
                     }
-                }
-            })
-        await communicator.send_json_to(
-            {
-                "type": "receive_json",
-                "message": {
-                    "action": "admin",
-                    "schema": "check_ready",
-                }
-            })
+                })
 
-        await communicator.send_json_to(
-            {
-                "type": "receive_json",
-                "message": {
-                    "action": "admin",
-                    "schema": "leave_room",
-                }
-            })
-        await communicator.send_json_to(
-            {
-                "type": "receive_json",
-                "message": {
-                    "action": "admin",
-                    "schema": "choose_random_deck",
-                }
-            })
+            await communicator.send_json_to(
+                {
+                    "type": "receive_json",
+                    "message": {
+                        "action": "create_room",
+                        "schema": "",
+                    }
+                })
+            await communicator.send_json_to(
+                {
+                    "type": "receive_json",
+                    "message": {
+                        "action": "admin",
+                        "schema": "next_article",
+                    }
+                })
+            await communicator.send_json_to(
+                {
+                    "type": "receive_json",
+                    "message": {
+                        "action": "admin",
+                        "schema": "game_ready",
+                    }
 
-        response = await communicator.receive_json_from()
-        print(response)
+                })
 
-        await communicator.disconnect()
+            await communicator.send_json_to(
+                {
+                    "type": "receive_json",
+                    "message": {
+                        "action": "admin",
+                        "schema": "check_ready",
+                    }
+                })
+
+            await communicator.send_json_to(
+                {
+                    "type": "receive_json",
+                    "message": {
+                        "action": "admin",
+                        "schema": "leave_room",
+                    }
+                })
+            await communicator.send_json_to(
+                {
+                    "type": "receive_json",
+                    "message": {
+                        "action": "admin",
+                        "schema": "choose_random_deck",
+                    }
+                })
+
+            await communicator.disconnect()
+        except ValueError:
+            pass
+
 
     async def test_receive(self):
         user = mixer.blend(User, is_superuser=True)
