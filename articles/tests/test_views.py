@@ -114,6 +114,7 @@ class TestDeckRecommendations(ModelViewSetHelpersMixin, APITestCase):
 
     def setUp(self) -> None:
         self.tags = mixer.cycle(20).blend(Tag)
+        self.admin = mixer.blend(User, is_superuser=True)
         self.user = mixer.blend(User)
         self.user.profile.interests.set(self.tags[:5])
         self.user.profile.save()
@@ -136,3 +137,48 @@ class TestDeckRecommendations(ModelViewSetHelpersMixin, APITestCase):
             deck_tags = set(deck.tags.all())
             interests = set(self.user.profile.interests.all())
             self.assertTrue(deck_tags.intersection(interests))
+
+    def test_get_trending_decks(self):
+        response = self.client.get(reverse('deck-trending'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_poll(self):
+        self.client.force_login(self.user)
+        article = mixer.blend(Article, is_poll=True)
+        response = self.client.get(reverse('deck-poll'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_mark_finished(self):
+        self.client.force_login(self.admin)
+        deck = mixer.blend(Deck)
+        response = self.client.post(reverse('deck-mark-finished', kwargs={'pk': deck.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_star_and_unstar(self):
+        self.client.force_login(self.admin)
+        deck = mixer.blend(Deck)
+        response = self.client.post(reverse('deck-star', kwargs={'pk': deck.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_remake_decks(self):
+        self.client.force_login(self.admin)
+        tag = mixer.blend(Tag)
+        article = mixer.blend(Article)
+        article.tags.add(tag)
+        deck = mixer.blend(Deck)
+        deck.articles.add(article)
+        response = self.client.post(reverse('deck-remake-decks'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_swipe_article(self):
+        self.client.force_login(self.user)
+        article1 = mixer.blend(Article)
+        article2 = mixer.blend(Article)
+        response = self.client.post(reverse('article-swipe-true', kwargs={'pk': article1.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(reverse('article-swipe-false', kwargs={'pk': article1.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(reverse('article-swipe-false', kwargs={'pk': article2.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.post(reverse('article-swipe-true', kwargs={'pk': article2.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
