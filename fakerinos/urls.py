@@ -28,7 +28,6 @@ urlpatterns = [
     path('api/leaderboard/', include('leaderboard.urls')),
     path('api/docs/', get_swagger_view(title='Fakerinos')),
     path('api/docs/default', include_docs_urls(title='Fakerinos')),
-    path('chat/', include('chat.urls')),
 ]
 
 if settings.DEBUG:

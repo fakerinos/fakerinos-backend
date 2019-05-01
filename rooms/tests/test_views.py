@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase
 from rest_framework.reverse import reverse
 from rest_framework import status
 from mixer.backend.django import mixer
-from articles.models import Deck
+from articles.models import Deck, Article
 from ..models import Room
 from ..serializers import RoomSerializer
 
@@ -151,5 +151,31 @@ class TestSinglePlayer(APITestCase):
     def test_admin_partial_update_room(self):
         response = self.partial_update_room(self.room.pk, {'max_players': 100}, user=self.admin)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    # endregion
+
+    # region Convenience Methods
+    def test_fake_a_game(self):
+        self.client.force_login(self.admin)
+        deck = mixer.blend(Deck)
+        articles = mixer.cycle(5).blend(Article)
+        deck.articles.set(articles)
+        self.client.post(reverse('single-player-fake-a-game'))
+
+    def test_game_sequence(self):
+        self.client.force_login(self.admin)
+        deck = mixer.blend(Deck)
+        articles = mixer.cycle(5).blend(Article)
+        deck.articles.set(articles)
+        self.client.post(self.list_endpoint, data={'deck': deck.pk})
+        response = self.client.post(reverse('single-player-finish'), data={'score': deck.articles.count() * 100})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_game_leave(self):
+        self.client.force_login(self.admin)
+        deck = mixer.blend(Deck)
+        self.client.post(self.list_endpoint, data={'deck': deck.pk})
+        response = self.client.post(reverse('single-player-leave'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # endregion

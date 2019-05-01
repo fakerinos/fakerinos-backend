@@ -1,11 +1,3 @@
-"""
-1. Populate Articles
-2. Create Deck
-    a. Create links
-        further: how? filter?
-3. Check Deck --> assert(deck.size)
-"""
-
 from ..models import Article, Deck
 from ..serializers import ArticleSerializer, DeckSerializer
 from rest_framework.test import APITestCase

@@ -14,7 +14,9 @@ class RoomConsumer(JsonWebsocketConsumer):
     def websocket_connect(self, message):
         try:
             self.user = self.scope['user']
-        except:
+        except Exception as e:
+            print(e)
+            logging.exception(e)
             message = "Connection error :: either you are not logged in or cannot provide authentication"
             self.send_json({
                 "action": "admin",
@@ -146,7 +148,7 @@ class RoomConsumer(JsonWebsocketConsumer):
             self.close()
 
     def leave_room(self):
-        logging.info("\tUser {} leaving room {}".format(self.user, self.user.player.room))
+        # logging.info("\tUser {} leaving room {}".format(self.user, self.user.player.room))
         try:
             user = self.scope['user']
             room = self.user.player.room
@@ -241,7 +243,6 @@ class RoomConsumer(JsonWebsocketConsumer):
 
     def next_article(self):
         logging.info("\t{} getting article".format(self.user))
-        player = self.user.player
         self.user.player.ready = False
         self.user.player.save()
         room = self.user.player.room
@@ -278,18 +279,13 @@ class RoomConsumer(JsonWebsocketConsumer):
                     )
         else:
             curr_article = Article.objects.get(pk=list_articles[article_counter])
-            # self.send_json({
-            #     "action": "card",
-            #     "message": str(ArticleSerializer(curr_article).data)
-            #     # "message": serializers.serialize("json", ArticleSerializer(article))
-            # })
             serializer = ArticleSerializer(curr_article)
             serialized_data = serializer.data
             serialized_data["action"] = "card"
             # logging.info(serialized_data)
             self.send_json(serialized_data)
 
-    def check_ready(self, room, is_this_list=False):
+    def check_ready(self, is_this_list=False):
         logging.info("\t{} checking if everyone is ready".format(self.user))
         complete_ready = True
 

@@ -127,9 +127,9 @@ class DeckViewSet(ModelViewSet):
         for tag in Tag.objects.all():
             filtered_articles = Article.objects.filter(tags=tag.pk)
             length = len(filtered_articles)
-            num = len(filtered_articles)//5
+            num = len(filtered_articles) // 5
             for i in range(num):
-                make_deck = filtered_articles[i:i+5]
+                make_deck = filtered_articles[i:i + 5]
                 d = Deck.objects.create()
                 d.title = '{}_{}'.format(tag.name, i)
                 d.description = tag.name
@@ -139,13 +139,14 @@ class DeckViewSet(ModelViewSet):
                 logging.info(d)
 
             rd = Deck.objects.create()
-            rd.title = '{}_{}'.format(tag.name, num+1)
+            rd.title = '{}_{}'.format(tag.name, num + 1)
             rd.description = tag.name
-            for i in range(len(filtered_articles)%5):
-                rd.articles.add(filtered_articles[length-i-1])
+            for i in range(len(filtered_articles) % 5):
+                rd.articles.add(filtered_articles[length - i - 1])
             rd.save()
             logging.info(rd)
         return Response(DeckSerializer(d).data, status=status.HTTP_200_OK)
+
 
 class TagViewSet(ModelViewSet):
     """
