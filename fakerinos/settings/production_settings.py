@@ -11,3 +11,7 @@ EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
 DEFAULT_FROM_EMAIL = os.environ['EMAIL_HOST_USER']
 EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+
+# AWS Cloudfront Config
+AWS_S3_CUSTOM_DOMAIN = "d2h9p1u4oz7smd.cloudfront.net"
